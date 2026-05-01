@@ -1,0 +1,1372 @@
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import mm
+from reportlab.lib import colors
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.platypus import (
+    SimpleDocTemplate, Paragraph, Spacer, PageBreak,
+    HRFlowable, Table, TableStyle, KeepTogether
+)
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.platypus.flowables import Flowable
+from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
+import os
+ 
+# ─── FONTS ───────────────────────────────────────────────
+FONT_DIR = "/usr/share/fonts/truetype/google-fonts"
+MONO_DIR = "/usr/share/fonts/truetype/google-fonts"
+LIBRE_DIR = "/usr/share/fonts/truetype/liberation"
+ 
+pdfmetrics.registerFont(TTFont("Lora", f"{FONT_DIR}/Lora-Variable.ttf"))
+pdfmetrics.registerFont(TTFont("LoraI", f"{FONT_DIR}/Lora-Italic-Variable.ttf"))
+pdfmetrics.registerFont(TTFont("Poppins", f"{FONT_DIR}/Poppins-Regular.ttf"))
+pdfmetrics.registerFont(TTFont("PoppinsB", f"{FONT_DIR}/Poppins-Bold.ttf"))
+pdfmetrics.registerFont(TTFont("PoppinsM", f"{FONT_DIR}/Poppins-Medium.ttf"))
+pdfmetrics.registerFont(TTFont("PoppinsL", f"{FONT_DIR}/Poppins-Light.ttf"))
+pdfmetrics.registerFont(TTFont("PoppinsLI", f"{FONT_DIR}/Poppins-LightItalic.ttf"))
+pdfmetrics.registerFont(TTFont("Mono", f"{LIBRE_DIR}/LiberationMono-Regular.ttf"))
+ 
+# ─── COLORS ──────────────────────────────────────────────
+TEAL        = colors.HexColor("#0d6b5e")
+TEAL_LIGHT  = colors.HexColor("#e8f5f2")
+TEAL_MID    = colors.HexColor("#1a7a6a")
+TEAL_DEEP   = colors.HexColor("#085047")
+AMBER       = colors.HexColor("#d4820a")
+AMBER_LIGHT = colors.HexColor("#fef3e2")
+AMBER_TEXT  = colors.HexColor("#6b4a0a")
+CORAL       = colors.HexColor("#c0735a")
+CORAL_LIGHT = colors.HexColor("#fdf2ee")
+CORAL_TEXT  = colors.HexColor("#7a3a30")
+IVORY       = colors.HexColor("#faf8f4")
+CREAM       = colors.HexColor("#f2efe8")
+CHARCOAL    = colors.HexColor("#1e1e1e")
+CHARCOAL_M  = colors.HexColor("#3a3a3a")
+GRAY_WARM   = colors.HexColor("#8a8078")
+GRAY_LIGHT  = colors.HexColor("#e8e4dc")
+WHITE       = colors.white
+ 
+W, H = A4
+ML = 22*mm
+MR = 22*mm
+MT = 20*mm
+MB = 22*mm
+ 
+# ─── STYLES ──────────────────────────────────────────────
+def S(name, **kw):
+    return ParagraphStyle(name, **kw)
+ 
+styles = {
+    "cover_title": S("cover_title",
+        fontName="Lora", fontSize=52, leading=56,
+        textColor=WHITE, alignment=TA_CENTER, spaceAfter=6),
+ 
+    "cover_de": S("cover_de",
+        fontName="Lora", fontSize=52, leading=56,
+        textColor=colors.HexColor("#ffffff60"), alignment=TA_CENTER),
+ 
+    "cover_sub": S("cover_sub",
+        fontName="Mono", fontSize=8, leading=14,
+        textColor=colors.HexColor("#ffffffaa"),
+        alignment=TA_CENTER, spaceAfter=8, spaceBefore=4),
+ 
+    "cover_tag": S("cover_tag",
+        fontName="LoraI", fontSize=13, leading=20,
+        textColor=colors.HexColor("#ffffffbb"),
+        alignment=TA_CENTER, spaceAfter=12),
+ 
+    "section_label": S("section_label",
+        fontName="Mono", fontSize=7.5, leading=12,
+        textColor=TEAL, spaceBefore=4, spaceAfter=4),
+ 
+    "chapter_num": S("chapter_num",
+        fontName="Mono", fontSize=7.5, leading=12,
+        textColor=GRAY_WARM, spaceAfter=3),
+ 
+    "page_title": S("page_title",
+        fontName="Lora", fontSize=28, leading=34,
+        textColor=CHARCOAL, spaceAfter=12, spaceBefore=2),
+ 
+    "section_title": S("section_title",
+        fontName="Lora", fontSize=22, leading=28,
+        textColor=CHARCOAL, spaceAfter=10, spaceBefore=6),
+ 
+    "sub_title": S("sub_title",
+        fontName="PoppinsM", fontSize=9, leading=14,
+        textColor=TEAL_DEEP, spaceBefore=14, spaceAfter=6),
+ 
+    "body": S("body",
+        fontName="Poppins", fontSize=9.5, leading=16,
+        textColor=CHARCOAL_M, spaceAfter=8),
+ 
+    "body_italic": S("body_italic",
+        fontName="LoraI", fontSize=10.5, leading=17,
+        textColor=CHARCOAL, spaceAfter=8),
+ 
+    "bullet": S("bullet",
+        fontName="Poppins", fontSize=9, leading=15,
+        textColor=CHARCOAL_M, leftIndent=12, spaceAfter=2,
+        bulletText="·", bulletIndent=0, bulletFontName="Poppins",
+        bulletFontSize=12, bulletColor=TEAL),
+ 
+    "numbered": S("numbered",
+        fontName="Poppins", fontSize=9, leading=15,
+        textColor=CHARCOAL_M, leftIndent=18, spaceAfter=3),
+ 
+    "sub_bullet": S("sub_bullet",
+        fontName="PoppinsL", fontSize=8.5, leading=14,
+        textColor=GRAY_WARM, leftIndent=24, spaceAfter=2),
+ 
+    "callout_label": S("callout_label",
+        fontName="Mono", fontSize=7, leading=11,
+        textColor=TEAL, spaceAfter=3),
+ 
+    "callout_label_amber": S("callout_label_amber",
+        fontName="Mono", fontSize=7, leading=11,
+        textColor=AMBER, spaceAfter=3),
+ 
+    "callout_label_coral": S("callout_label_coral",
+        fontName="Mono", fontSize=7, leading=11,
+        textColor=CORAL, spaceAfter=3),
+ 
+    "callout_text": S("callout_text",
+        fontName="LoraI", fontSize=9.5, leading=16,
+        textColor=TEAL_DEEP, spaceAfter=0),
+ 
+    "callout_action": S("callout_action",
+        fontName="Poppins", fontSize=9, leading=15,
+        textColor=AMBER_TEXT, leftIndent=10, spaceAfter=2),
+ 
+    "pull_quote": S("pull_quote",
+        fontName="LoraI", fontSize=13, leading=21,
+        textColor=CHARCOAL, spaceAfter=8, spaceBefore=8),
+ 
+    "term_name": S("term_name",
+        fontName="Lora", fontSize=10, leading=15,
+        textColor=TEAL_DEEP),
+ 
+    "term_def": S("term_def",
+        fontName="PoppinsL", fontSize=8.5, leading=14,
+        textColor=CHARCOAL_M),
+ 
+    "warning_real": S("warning_real",
+        fontName="PoppinsM", fontSize=9.5, leading=15,
+        textColor=CORAL_TEXT),
+ 
+    "warning_reframe": S("warning_reframe",
+        fontName="PoppinsL", fontSize=9, leading=14,
+        textColor=GRAY_WARM),
+ 
+    "toc_num": S("toc_num",
+        fontName="Mono", fontSize=8, leading=13,
+        textColor=GRAY_WARM),
+ 
+    "toc_label": S("toc_label",
+        fontName="Poppins", fontSize=9.5, leading=15,
+        textColor=CHARCOAL_M),
+ 
+    "flag_label": S("flag_label",
+        fontName="Mono", fontSize=7, leading=11,
+        textColor=GRAY_WARM, spaceAfter=2),
+ 
+    "flag_title": S("flag_title",
+        fontName="PoppinsM", fontSize=9.5, leading=14,
+        textColor=CHARCOAL, spaceAfter=4),
+ 
+    "qs_header": S("qs_header",
+        fontName="Mono", fontSize=7, leading=11,
+        textColor=TEAL, spaceAfter=3),
+ 
+    "qs_title": S("qs_title",
+        fontName="Lora", fontSize=12, leading=17,
+        textColor=CHARCOAL, spaceAfter=6),
+ 
+    "footer": S("footer",
+        fontName="Mono", fontSize=7, leading=10,
+        textColor=GRAY_WARM, alignment=TA_CENTER),
+}
+ 
+# ─── CUSTOM FLOWABLES ────────────────────────────────────
+ 
+class ColorBox(Flowable):
+    """A colored rounded rectangle for callouts."""
+    def __init__(self, content_rows, bg, border_color, left_accent=True, width=None, radius=4):
+        super().__init__()
+        self.content_rows = content_rows  # list of Paragraphs
+        self.bg = bg
+        self.border_color = border_color
+        self.left_accent = left_accent
+        self._width = width or (W - ML - MR)
+        self.radius = radius
+        self.padding = 10
+        self.spaceBefore = 8
+        self.spaceAfter = 8
+        self._height = None
+ 
+    def wrap(self, availWidth, availHeight):
+        inner_w = self._width - 2*self.padding - (3 if self.left_accent else 0)
+        total_h = self.padding
+        for p in self.content_rows:
+            w, h = p.wrap(inner_w, availHeight)
+            total_h += h + 3
+        total_h += self.padding
+        self._height = total_h
+        return self._width, self._height
+ 
+    def draw(self):
+        c = self.canv
+        w = self._width
+        h = self._height
+        r = self.radius
+        # background
+        c.setFillColor(self.bg)
+        c.roundRect(0, 0, w, h, r, stroke=0, fill=1)
+        # left accent bar
+        if self.left_accent:
+            c.setFillColor(self.border_color)
+            c.rect(0, 0, 3, h, stroke=0, fill=1)
+            # re-round the right side only by drawing bg on top-left
+        # draw content
+        x = self.padding + (3 if self.left_accent else 0)
+        y = h - self.padding
+        inner_w = w - 2*self.padding - (3 if self.left_accent else 0)
+        for p in self.content_rows:
+            pw, ph = p.wrap(inner_w, 9999)
+            y -= ph
+            p.drawOn(c, x, y)
+            y -= 3
+ 
+ 
+class HRule(Flowable):
+    def __init__(self, color=None, thickness=0.5, width=None):
+        super().__init__()
+        self.color = color or GRAY_LIGHT
+        self.thickness = thickness
+        self._width = width
+        self.spaceBefore = 10
+        self.spaceAfter = 10
+ 
+    def wrap(self, aw, ah):
+        return (self._width or aw), self.thickness + 1
+ 
+    def draw(self):
+        self.canv.setStrokeColor(self.color)
+        self.canv.setLineWidth(self.thickness)
+        self.canv.line(0, 0, self._width or self.canv._pagesize[0]-ML-MR, 0)
+ 
+ 
+class CoverPage(Flowable):
+    def __init__(self):
+        super().__init__()
+        self.width, self.height = A4
+ 
+    def wrap(self, aw, ah):
+        return self.width, self.height
+ 
+    def draw(self):
+        c = self.canv
+        w, h = self.width, self.height
+ 
+        # Background
+        c.setFillColor(TEAL)
+        c.rect(0, 0, w, h, stroke=0, fill=1)
+ 
+        # Subtle radial overlay effect (flat teal variant)
+        c.setFillColor(colors.HexColor("#0a5a4f"))
+        c.ellipse(w*0.05, h*0.3, w*0.55, h*0.85, stroke=0, fill=1)
+        c.setFillColor(TEAL)
+        c.ellipse(w*0.1, h*0.35, w*0.5, h*0.82, stroke=0, fill=1)
+ 
+        # Top mono eyebrow
+        c.setFont("Mono", 7.5)
+        c.setFillColor(colors.HexColor("#ffffff55"))
+        c.drawCentredString(w/2, h - 48*mm, "A LIVED-EXPERIENCE WORKBOOK")
+ 
+        # DE (muted)
+        c.setFont("Lora", 64)
+        c.setFillColor(colors.HexColor("#ffffff35"))
+        c.drawCentredString(w/2 - 68, h - 80*mm, "DE")
+ 
+        # CULT (amber)
+        c.setFont("Lora", 64)
+        c.setFillColor(colors.HexColor("#f5a623"))
+        c.drawCentredString(w/2 + 18, h - 80*mm, "CULT")
+ 
+        # IVATE (white)
+        c.setFont("Lora", 64)
+        c.setFillColor(WHITE)
+        c.drawCentredString(w/2 + 130, h - 80*mm, "IVATE")
+ 
+        # Subtitle line
+        c.setFont("Mono", 8)
+        c.setFillColor(colors.HexColor("#ffffffaa"))
+        c.drawCentredString(w/2, h - 95*mm, "ARE YOU IN ONE?")
+ 
+        # Tagline
+        c.setFont("LoraI", 12)
+        c.setFillColor(colors.HexColor("#ffffffcc"))
+        lines = [
+            "Trapped in the shadows of control,",
+            "individuals lose themselves to manipulation.",
+            "Yet within every story of captivity lies",
+            "the powerful potential for freedom."
+        ]
+        for i, line in enumerate(lines):
+            c.drawCentredString(w/2, h - 112*mm - i*16, line)
+ 
+        # Three pillars strip
+        strip_y = h - 155*mm
+        strip_h = 14*mm
+        for i, label in enumerate(["SPOT IT", "LEAVE IT", "RECOVER"]):
+            bx = w/2 - 55*mm + i*37*mm
+            c.setFillColor(colors.HexColor("#00000044"))
+            c.roundRect(bx, strip_y, 35*mm, strip_h, 2, stroke=0, fill=1)
+            c.setFont("Mono", 7.5)
+            c.setFillColor(colors.HexColor("#ffffffbb"))
+            c.drawCentredString(bx + 17.5*mm, strip_y + 4.5*mm, label)
+ 
+        # Bottom "THE WORKBOOK"
+        c.setFont("PoppinsB", 11)
+        c.setFillColor(WHITE)
+        c.drawCentredString(w/2, 28*mm, "THE WORKBOOK")
+ 
+        # Page rule
+        c.setStrokeColor(colors.HexColor("#ffffff22"))
+        c.setLineWidth(0.5)
+        c.line(ML, 22*mm, w - MR, 22*mm)
+ 
+ 
+# ─── PAGE TEMPLATE (header/footer) ───────────────────────
+ 
+page_num = [0]
+ 
+def on_page(canvas, doc):
+    page_num[0] += 1
+    pn = page_num[0]
+    if pn <= 1:
+        return  # skip cover
+    canvas.saveState()
+    canvas.setFont("Mono", 7)
+    canvas.setFillColor(GRAY_WARM)
+    # Footer: page number centered
+    canvas.drawCentredString(W/2, 12*mm, f"— {pn - 1} —")
+    # Header: workbook name
+    canvas.drawString(ML, H - 12*mm, "DECULTIVATE  ·  THE WORKBOOK")
+    canvas.drawRightString(W - MR, H - 12*mm, "decultivate.co")
+    canvas.setStrokeColor(GRAY_LIGHT)
+    canvas.setLineWidth(0.4)
+    canvas.line(ML, H - 14*mm, W - MR, H - 14*mm)
+    canvas.line(ML, 15*mm, W - MR, 15*mm)
+    canvas.restoreState()
+ 
+ 
+# ─── HELPER BUILDERS ─────────────────────────────────────
+ 
+def spacer(h=8):
+    return Spacer(1, h)
+ 
+def hr(color=None):
+    return HRule(color=color or GRAY_LIGHT)
+ 
+def label(text):
+    return Paragraph(text.upper(), styles["section_label"])
+ 
+def chnum(text):
+    return Paragraph(text, styles["chapter_num"])
+ 
+def title(text, style="page_title"):
+    return Paragraph(text, styles[style])
+ 
+def body(text):
+    return Paragraph(text, styles["body"])
+ 
+def italic(text):
+    return Paragraph(text, styles["body_italic"])
+ 
+def bullet(text, sub=None):
+    items = [Paragraph(f"<bullet>&bull;</bullet>{text}", styles["bullet"])]
+    if sub:
+        items.append(Paragraph(sub, styles["sub_bullet"]))
+    return items
+ 
+def numbered(n, text, sub=None):
+    items = [Paragraph(f"<b>{n}.</b>  {text}", styles["numbered"])]
+    if sub:
+        items.append(Paragraph(sub, styles["sub_bullet"]))
+    return items
+ 
+def pull_quote(text):
+    return [
+        HRule(color=AMBER, thickness=1.5),
+        spacer(6),
+        Paragraph(f'"{text}"', styles["pull_quote"]),
+        spacer(6),
+        HRule(color=AMBER, thickness=1.5),
+        spacer(10),
+    ]
+ 
+def lesson_box(text):
+    return ColorBox([
+        Paragraph("LESSON", styles["callout_label"]),
+        Paragraph(text, styles["callout_text"]),
+    ], bg=TEAL_LIGHT, border_color=TEAL)
+ 
+def action_box(items):
+    rows = [Paragraph("WHAT TO DO", styles["callout_label_amber"])]
+    for item in items:
+        rows.append(Paragraph(f"\u2192  {item}", styles["callout_action"]))
+    return ColorBox(rows, bg=AMBER_LIGHT, border_color=AMBER)
+ 
+def warning_box(text):
+    return ColorBox([
+        Paragraph("NOTE", styles["callout_label_coral"]),
+        Paragraph(text, ParagraphStyle("wb",
+            fontName="PoppinsL", fontSize=9, leading=15,
+            textColor=CORAL_TEXT)),
+    ], bg=CORAL_LIGHT, border_color=CORAL)
+ 
+def section_divider(text):
+    return [
+        spacer(16),
+        HRule(color=GRAY_LIGHT),
+        spacer(6),
+        Paragraph(text.upper(), ParagraphStyle("div",
+            fontName="Mono", fontSize=7, leading=10,
+            textColor=GRAY_WARM, alignment=TA_CENTER)),
+        spacer(6),
+        HRule(color=GRAY_LIGHT),
+        spacer(16),
+    ]
+ 
+ 
+def qs_card(header_color, header_text, title_text, steps):
+    """Build a Quick Start card as a table."""
+    content = []
+    content.append(Paragraph(header_text.upper(), ParagraphStyle("qsh",
+        fontName="Mono", fontSize=7, leading=11, textColor=header_color)))
+    content.append(spacer(3))
+    content.append(Paragraph(title_text, styles["qs_title"]))
+    content.append(HRule(color=GRAY_LIGHT, thickness=0.5))
+    content.append(spacer(4))
+    for i, (step, sub) in enumerate(steps, 1):
+        content.append(Paragraph(
+            f'<font color="#0d6b5e"><b>{i}.</b></font>  {step}',
+            styles["numbered"]))
+        if sub:
+            content.append(Paragraph(sub, styles["sub_bullet"]))
+        content.append(spacer(3))
+    return content
+ 
+ 
+def term_row(name, definition):
+    return [
+        [
+            Paragraph(name, styles["term_name"]),
+            Paragraph(definition, styles["term_def"]),
+        ]
+    ]
+ 
+ 
+def flag_card(letter, title_text, bullets):
+    content = [
+        Paragraph(letter, styles["flag_label"]),
+        Paragraph(title_text, styles["flag_title"]),
+    ]
+    for b in bullets:
+        content.append(Paragraph(f"\u00b7  {b}", ParagraphStyle("fb",
+            fontName="PoppinsL", fontSize=8.5, leading=14,
+            textColor=CHARCOAL_M, leftIndent=6, spaceAfter=1)))
+    return content
+ 
+ 
+# ─── BUILD STORY ─────────────────────────────────────────
+ 
+story = []
+ 
+# COVER
+story.append(CoverPage())
+story.append(PageBreak())
+ 
+# ─── BEFORE WE BEGIN ──────────────────────────────────────
+story += [
+    label("A note before we begin"),
+    title("You may not be crazy\nfor feeling that tension."),
+    spacer(4),
+    ColorBox([
+        Paragraph(
+            "<i>I'm writing this like I write in my Evernote — not polished, not trying to sound impressive. Just honest. "
+            "I'm not here to label every intense community a 'cult.' I am here to name what I experienced when something "
+            "started to feel cultish — controlling, narrative-protecting, emotionally expensive — and what it cost to stay, "
+            "and what it cost to leave.</i>",
+            ParagraphStyle("intro", fontName="LoraI", fontSize=10, leading=17, textColor=CHARCOAL_M)
+        )
+    ], bg=CREAM, border_color=GRAY_LIGHT, left_accent=False),
+    spacer(10),
+    body("This is not professional counseling or legal advice. It's a lived-experience map and lessons learned. "
+         "I write from a faith perspective, but I'm keeping this broadly accessible. You don't have to share my beliefs "
+         "to benefit from the patterns."),
+    *bullet("If you're currently in a space that feels unsafe: you may not be crazy for feeling that tension."),
+    *bullet("If you've just left: you might be both grieving and relieved at the same time. Both can be true."),
+    *bullet("If you're about to join something: excitement can be real, but discernment matters at every juncture."),
+    spacer(10),
+    lesson_box("Confusion doesn't always mean you're 'too sensitive.' Sometimes it means your internal warning system is working."),
+    spacer(4),
+    action_box([
+        "Slow down and name what you're experiencing in one sentence.",
+        "If you're in danger — emotionally, physically, financially — prioritize safety and outside support first.",
+    ]),
+    spacer(16),
+]
+ 
+# TOC
+story += [
+    *section_divider("Contents"),
+]
+ 
+toc_items = [
+    ("00", "Quick Start — if you're in, out, or about to join"),
+    ("01", "Key Terms"),
+    ("02", "How it starts (the good is real)"),
+    ("03", "The subtle shift (when it becomes lopsided)"),
+    ("04", "What it does inside you (pain points)"),
+    ("05", "Red flags I wish I named earlier"),
+    ("06", "The price to pay — staying vs leaving"),
+    ("07", "Getting out (not dramatic, but real)"),
+    ("08", "Recovery: the messy middle"),
+    ("09", "Practical pages (in / out / at risk)"),
+    ("10", "My warning list"),
+    ("11", "Appendix: quick red-flag checklist"),
+]
+ 
+toc_data = [[
+    Paragraph(num, styles["toc_num"]),
+    Paragraph(lbl, styles["toc_label"]),
+] for num, lbl in toc_items]
+ 
+toc_table = Table(toc_data, colWidths=[18*mm, W-ML-MR-18*mm])
+toc_table.setStyle(TableStyle([
+    ("ROWBACKGROUNDS", (0,0), (-1,-1), [WHITE, CREAM]),
+    ("TOPPADDING", (0,0), (-1,-1), 7),
+    ("BOTTOMPADDING", (0,0), (-1,-1), 7),
+    ("LEFTPADDING", (0,0), (-1,-1), 8),
+    ("RIGHTPADDING", (0,0), (-1,-1), 8),
+    ("LINEBELOW", (0,0), (-1,-2), 0.3, GRAY_LIGHT),
+    ("VALIGN", (0,0), (-1,-1), "MIDDLE"),
+    ("ROUNDEDCORNERS", (0,0), (-1,-1), [4,4,4,4]),
+]))
+story.append(toc_table)
+story.append(PageBreak())
+ 
+# ─── QUICK START ──────────────────────────────────────────
+story += [
+    label("Quick Start"),
+    title("Wherever you are — start here."),
+    body("Don't know what section fits your situation? Use this page first. Five steps for three different places you might be standing right now."),
+    spacer(12),
+]
+ 
+qs_data = [
+    [
+        qs_card(TEAL, "If you're still inside", "Do these 5 things first", [
+            ("Name reality in one sentence.", '"I feel pressured to comply and punished for questions."'),
+            ("Track patterns for 2–4 weeks.", "Date / what happened / how it was handled / cost to you."),
+            ("Get outside perspective.", "1–2 safe people: friend, mentor, counselor, pastor, HR, lawyer."),
+            ("Protect your basics.", "Sleep, food, work stability, kids' emotional safety, finances."),
+            ("Slow major decisions.", "Don't sign, move, quit, or donate large amounts under urgency."),
+        ]),
+        qs_card(AMBER, "If you've recently left", "Do these 5 things first", [
+            ("Stabilize your body.", "Sleep, meals, movement, sunlight."),
+            ("Tell the truth in small pieces.", "Facts + feelings. No rush to make it 'sound nice.'"),
+            ("Pick 1–3 safe people.", "Consistent support beats a big audience."),
+            ("Delay big replacements.", "Don't rush into a new group just to stop the pain."),
+            ("Rebuild rhythm before 'meaning.'", "Simple routines first; clarity often follows."),
+        ]),
+        qs_card(CORAL, "If you're about to join", "Do these 5 things first", [
+            ("Ask how dissent is handled.", '"What happens when leaders are wrong?"'),
+            ("Ask for transparency early.", "Leadership structure, money flow, grievance process."),
+            ("Keep outside relationships strong.", "Healthy groups don't require isolation."),
+            ("Keep finances and commitments slow.", "No large donations or relocations under pressure."),
+            ("Watch for urgency + monopoly.", '"Only us. Only here. Only this leader. Decide now."'),
+        ]),
+    ]
+]
+ 
+# Build as 3-column table
+col_w = (W - ML - MR - 8*mm) / 3
+ 
+def build_qs_cell(content_list):
+    from reportlab.platypus import KeepInFrame
+    return content_list
+ 
+# Simple approach: render each card vertically stacked in a 3-col table
+def flatten(lst):
+    result = []
+    for item in lst:
+        if isinstance(item, list):
+            result.extend(item)
+        else:
+            result.append(item)
+    return result
+ 
+qs1 = flatten(qs_card(TEAL, "If you're still inside", "Do these 5 things first", [
+    ("Name reality in one sentence.", '"I feel pressured to comply and punished for questions."'),
+    ("Track patterns for 2–4 weeks.", "Date / what happened / how it was handled / cost to you."),
+    ("Get outside perspective.", "1–2 safe people: friend, mentor, counselor, pastor, HR."),
+    ("Protect your basics.", "Sleep, food, work stability, kids' safety, finances."),
+    ("Slow major decisions.", "Don't sign, move, quit, or donate under urgency."),
+]))
+qs2 = flatten(qs_card(AMBER, "If you've recently left", "Do these 5 things first", [
+    ("Stabilize your body.", "Sleep, meals, movement, sunlight."),
+    ("Tell the truth in small pieces.", "Facts + feelings. No rush to make it 'sound nice.'"),
+    ("Pick 1–3 safe people.", "Consistent support beats a big audience."),
+    ("Delay big replacements.", "Don't rush into a new group just to stop the pain."),
+    ("Rebuild rhythm before 'meaning.'", "Simple routines first; clarity often follows."),
+]))
+qs3 = flatten(qs_card(CORAL, "If you're about to join", "Do these 5 things first", [
+    ("Ask how dissent is handled.", '"What happens when leaders are wrong?"'),
+    ("Ask for transparency early.", "Leadership structure, money flow, grievance process."),
+    ("Keep outside relationships strong.", "Healthy groups don't require isolation."),
+    ("Keep finances and commitments slow.", "No large donations or relocations under pressure."),
+    ("Watch for urgency + monopoly.", '"Only us. Only here. Decide now."'),
+]))
+ 
+qs_table = Table([[qs1, qs2, qs3]], colWidths=[col_w, col_w, col_w])
+qs_table.setStyle(TableStyle([
+    ("VALIGN", (0,0), (-1,-1), "TOP"),
+    ("LEFTPADDING", (0,0), (-1,-1), 6),
+    ("RIGHTPADDING", (0,0), (-1,-1), 6),
+    ("TOPPADDING", (0,0), (-1,-1), 10),
+    ("BOTTOMPADDING", (0,0), (-1,-1), 10),
+    ("BOX", (0,0), (0,0), 0.5, GRAY_LIGHT),
+    ("BOX", (1,0), (1,0), 0.5, GRAY_LIGHT),
+    ("BOX", (2,0), (2,0), 0.5, GRAY_LIGHT),
+    ("BACKGROUND", (0,0), (0,0), TEAL_LIGHT),
+    ("BACKGROUND", (1,0), (1,0), AMBER_LIGHT),
+    ("BACKGROUND", (2,0), (2,0), CORAL_LIGHT),
+    ("LINEABOVE", (0,0), (0,0), 3, TEAL),
+    ("LINEABOVE", (1,0), (1,0), 3, AMBER),
+    ("LINEABOVE", (2,0), (2,0), 3, CORAL),
+    ("ROUNDEDCORNERS", (0,0), (-1,-1), [0, 0, 4, 4]),
+]))
+story.append(qs_table)
+story.append(PageBreak())
+ 
+# ─── KEY TERMS ────────────────────────────────────────────
+story += [
+    label("01 — Key Terms"),
+    title("A shared language\nfor what happens."),
+    body("Words help you name what you're experiencing. Once you can name it, you can act on it."),
+    spacer(10),
+]
+ 
+terms = [
+    ("Cultish", "A space that may look meaningful on the outside, but uses pressure, control, fear, or manipulation to secure loyalty and protect a narrative."),
+    ("Control masked as care", "When guidance becomes coercion: you're 'advised' but not actually free to choose. Disagreement is punished — overtly or subtly."),
+    ("Coercion", "Pressure that removes real consent. 'No matter the price' language. Urgency, threats, shaming, or spiritualizing consequences to force compliance."),
+    ("Narrative protection", "A culture where the story must stay clean, even if the truth is messy. Concerns are minimized or reframed as disloyal. Image management beats repair."),
+    ("Loyalty tests", "Signals that prove you're 'in.' Increasing demands — time, money, access. Silence framed as maturity. Agreement required before clarity is provided."),
+    ("Truth monopoly", "When only a few people are allowed to define reality. 'It is decided.' Questions are treated like rebellion."),
+    ("Gaslighting", "A pattern of making you doubt your own perception. 'That didn't happen.' 'You're overreacting.' 'You misunderstood.' — especially when repeated and paired with power."),
+    ("Boundary erosion", "Your limits become negotiable, theirs become sacred. Time, privacy, money, family, and health are repeatedly crossed without accountability."),
+    ("Sunk cost", "Staying because you've already paid so much — money, years, friendships, identity, calling, reputation. The investment becomes the trap."),
+    ("Duality mode", "Functioning outwardly while internally splitting. 'I'm fine' on the outside; anxiety and confusion inside."),
+    ("Enmeshment", "When the group becomes your whole world — leaving feels like losing your identity, relationships, and meaning all at once."),
+    ("Repair Work", "A key health marker: when harm happens, does the group own it, apologize, change, and make it right? Or does it protect the narrative?"),
+]
+ 
+terms_data = []
+for name, defn in terms:
+    terms_data.append([
+        Paragraph(name, styles["term_name"]),
+        Paragraph(defn, styles["term_def"]),
+    ])
+ 
+terms_table = Table(terms_data, colWidths=[48*mm, W-ML-MR-52*mm])
+terms_table.setStyle(TableStyle([
+    ("VALIGN", (0,0), (-1,-1), "TOP"),
+    ("TOPPADDING", (0,0), (-1,-1), 8),
+    ("BOTTOMPADDING", (0,0), (-1,-1), 8),
+    ("LEFTPADDING", (0,0), (-1,-1), 10),
+    ("RIGHTPADDING", (0,0), (-1,-1), 10),
+    ("LINEBELOW", (0,0), (-1,-2), 0.4, GRAY_LIGHT),
+    ("ROWBACKGROUNDS", (0,0), (-1,-1), [WHITE, CREAM]),
+]))
+story.append(terms_table)
+story.append(PageBreak())
+ 
+# ─── CH 1: HOW IT STARTS ──────────────────────────────────
+story += [
+    chnum("Chapter 02"),
+    title("How it starts —\nthe good is real.", "section_title"),
+    spacer(6),
+    body("No one sets out to join a cult. It usually doesn't begin with a warning label — but with hope."),
+    *pull_quote("It usually doesn't begin with a warning label. It begins with hope."),
+    body("A shared dream. A strong sense of mission. The language of 'family,' 'unity,' 'community,' 'calling' — and people who seem passionate, certain, and all-in."),
+    italic('"Finally — people who care. Finally — clarity. Finally — purpose."'),
+    spacer(4),
+    body("And to be fair: there was good in the mix. There was value gained. There was care and concern shown. But that would make it confusing later on — because the good was real, and it was mixed with unhealthy control."),
+    spacer(8),
+    lesson_box("The good is often real — and it can still be mixed with unhealthy control."),
+    spacer(4),
+    action_box([
+        "Enjoy the good — but don't rush your discernment.",
+        "Keep your outside relationships strong: friends, family, mentors.",
+    ]),
+    spacer(20),
+]
+ 
+# ─── CH 2: SUBTLE SHIFT ──────────────────────────────────
+story += [
+    chnum("Chapter 03"),
+    title("The subtle shift —\nwhen it became lopsided.", "section_title"),
+    spacer(6),
+    body("The shift wasn't one dramatic event. It was a pattern."),
+    body("What looked like dialogue became a monologue. What looked like shared vision became vision-preservation. What looked like openness became defensiveness."),
+    body("Things I started noticing:"),
+    *bullet("Questions being brushed aside"),
+    *bullet("Important information withheld or 'not clearly announced'"),
+    *bullet("Goalposts shifting"),
+    *bullet("Passive-aggressive communication"),
+    *bullet('"We\'ve done all we can" said with no real willingness to understand'),
+    *bullet("An increasing need to be right, stay in control, protect the narrative"),
+    spacer(8),
+    warning_box("It can become cultish without anyone ever using the word cult."),
+    spacer(8),
+    lesson_box("Watch patterns, not charisma. Watch outcomes, not intensity."),
+    spacer(4),
+    action_box([
+        "Start a simple log: date / what happened / how it was handled / what it cost you.",
+        "Ask: 'When someone raises a concern, do we repair — or do we punish?'",
+    ]),
+    spacer(20),
+]
+ 
+# ─── CH 3: PAIN POINTS ───────────────────────────────────
+story += [
+    chnum("Chapter 04"),
+    title("What it does inside you —\nthe pain points.", "section_title"),
+    spacer(6),
+    body("This is the part people often don't see. The outside can still look like a community. The inside starts to feel like pressure."),
+    *bullet("Confusion — because love and control get mixed"),
+    *bullet("A constant low-grade anxiety"),
+    *bullet("Second-guessing yourself for asking normal questions"),
+    *bullet("Feeling like you must prove loyalty to be safe"),
+    *bullet("Exhaustion from emotionally expensive conversations"),
+    *bullet("Discouragement and disillusionment"),
+    *bullet("Living in 'duality mode' — acting fine while feeling unsettled"),
+    spacer(8),
+    *pull_quote("Something is off. And I'm paying for it in my peace."),
+    lesson_box("Your body often tells the truth before your mind can explain it."),
+    spacer(4),
+    action_box([
+        "Notice the signals: sleep disruption, appetite changes, dread, tightness, rumination.",
+        "Talk to one safe person outside the system. Isolation increases control.",
+    ]),
+    PageBreak(),
+]
+ 
+# ─── CH 4: RED FLAGS ─────────────────────────────────────
+story += [
+    label("05 — Red Flags"),
+    title("Red flags I wish\nI named earlier."),
+    body("Not every strong leader is controlling. Not every clear doctrine is manipulative. But these were the cultish markers that mattered."),
+    spacer(10),
+]
+ 
+flags = [
+    ("A", "Control masked as care", [
+        '"We\'re protecting you" — but you\'re not allowed to choose',
+        '"We know what\'s best" — but you\'re not allowed to question',
+    ]),
+    ("B", "Coercion around a grand vision", [
+        '"No matter the price" language',
+        "The mission used to override basic limits: sleep, family, finances, health",
+    ]),
+    ("C", "Truth monopolies", [
+        "Truth handled by a few; others expected to submit",
+        '"It is decided" — with no feedback loop',
+    ]),
+    ("D", "Hidden structure, sudden enforcement", [
+        "Leadership structure unclear… until it's enforced",
+        "Decisions made without transparency",
+    ]),
+    ("E", "Narrative protection", [
+        "Hard conversations redirected, minimized, or reframed as disloyal",
+        "Spiritual language used to justify poor handling",
+    ]),
+    ("F", "People becoming tools", [
+        "The task becomes more important than the person",
+        "Volunteer culture that overloads, guilts, sidelines, or never appreciates",
+    ]),
+    ("G", "Emotional manipulation", [
+        "Gaslighting and subtle shaming",
+        'Fear of being labeled "rebellious," "unreasonable," or "unsafe"',
+    ]),
+]
+ 
+flag_col_w = (W - ML - MR - 8*mm) / 2
+flag_data_left = []
+flag_data_right = []
+for i, (letter, ftitle, fbullets) in enumerate(flags):
+    cell = flag_card(letter, ftitle, fbullets)
+    if i % 2 == 0:
+        flag_data_left.append(cell)
+    else:
+        flag_data_right.append(cell)
+ 
+# Pad to equal length
+while len(flag_data_left) > len(flag_data_right):
+    flag_data_right.append([spacer(1)])
+while len(flag_data_right) > len(flag_data_left):
+    flag_data_left.append([spacer(1)])
+ 
+flag_rows = list(zip(flag_data_left, flag_data_right))
+flag_table = Table(flag_rows, colWidths=[flag_col_w, flag_col_w])
+flag_table.setStyle(TableStyle([
+    ("VALIGN", (0,0), (-1,-1), "TOP"),
+    ("TOPPADDING", (0,0), (-1,-1), 10),
+    ("BOTTOMPADDING", (0,0), (-1,-1), 10),
+    ("LEFTPADDING", (0,0), (-1,-1), 10),
+    ("RIGHTPADDING", (0,0), (-1,-1), 10),
+    ("BOX", (0,0), (0,-1), 0.5, GRAY_LIGHT),
+    ("BOX", (1,0), (1,-1), 0.5, GRAY_LIGHT),
+    ("LINEBELOW", (0,0), (-1,-2), 0.4, GRAY_LIGHT),
+    ("ROWBACKGROUNDS", (0,0), (-1,-1), [WHITE, CREAM]),
+]))
+story.append(flag_table)
+story += [
+    spacer(12),
+    *pull_quote("Control is still control — even when it looks spiritual."),
+    lesson_box("The clearest marker is not how 'right' something sounds — but how it treats people who ask honest questions."),
+    spacer(4),
+    action_box([
+        "Ask directly: 'What happens here when a leader is wrong?'",
+        "Look for shared power: clear accountability, transparent decisions, real feedback loops.",
+    ]),
+    PageBreak(),
+]
+ 
+# ─── CH 5: COST ───────────────────────────────────────────
+story += [
+    chnum("Chapter 06"),
+    title("The price to pay —\nstaying vs leaving.", "section_title"),
+    spacer(6),
+    body("The cost isn't abstract. It's personal."),
+    spacer(10),
+]
+ 
+cost_staying = [
+    Paragraph("THE COST OF STAYING", ParagraphStyle("csh",
+        fontName="Mono", fontSize=7.5, leading=12, textColor=CORAL)),
+    spacer(6),
+] + [
+    Paragraph(f"\u00b7  {t}", ParagraphStyle("csi",
+        fontName="Poppins", fontSize=9, leading=15, textColor=CORAL_TEXT, leftIndent=6, spaceAfter=2))
+    for t in ["Peace", "Clarity", "Emotional energy", "Trust", "Rest and joy", "Family stability",
+              "Children's sense of safety", "Creativity and presence",
+              "Sunk cost — 'I've invested too much to leave'",
+              "Normalizing the abnormal",
+              "Shrinking your discernment to survive"]
+]
+ 
+cost_leaving = [
+    Paragraph("THE COST OF LEAVING", ParagraphStyle("clh",
+        fontName="Mono", fontSize=7.5, leading=12, textColor=TEAL)),
+    spacer(6),
+] + [
+    Paragraph(f"\u00b7  {t}", ParagraphStyle("cli",
+        fontName="Poppins", fontSize=9, leading=15, textColor=TEAL_DEEP, leftIndent=6, spaceAfter=2))
+    for t in ["Grief", "Misunderstanding", "Relational fallout", "Financial limitations (sometimes)",
+              "Loss of familiar rhythms and identity",
+              "The shaky feeling of ground giving way", "Starting over",
+              "Time and energy to rebuild", "Sitting with uncertainty"]
+]
+ 
+cost_table = Table([[cost_staying, cost_leaving]], colWidths=[(W-ML-MR-8*mm)/2, (W-ML-MR-8*mm)/2])
+cost_table.setStyle(TableStyle([
+    ("VALIGN", (0,0), (-1,-1), "TOP"),
+    ("TOPPADDING", (0,0), (-1,-1), 12),
+    ("BOTTOMPADDING", (0,0), (-1,-1), 12),
+    ("LEFTPADDING", (0,0), (-1,-1), 14),
+    ("RIGHTPADDING", (0,0), (-1,-1), 14),
+    ("BACKGROUND", (0,0), (0,0), CORAL_LIGHT),
+    ("BACKGROUND", (1,0), (1,0), TEAL_LIGHT),
+    ("BOX", (0,0), (0,0), 0.5, colors.HexColor("#e8a598")),
+    ("BOX", (1,0), (1,0), 0.5, colors.HexColor("#b0d8cf")),
+]))
+story.append(cost_table)
+story += [
+    spacer(12),
+    lesson_box("'Staying' and 'leaving' both cost. The question is: which cost produces more life and truth over time?"),
+    spacer(4),
+    action_box([
+        "Write two lists: Cost of staying for 6 more months vs Cost of leaving within 6 months.",
+        "Include your kids, health, finances, friendships, and inner life in both columns.",
+    ]),
+    spacer(20),
+]
+ 
+# ─── CH 6: GETTING OUT ────────────────────────────────────
+story += [
+    chnum("Chapter 07"),
+    title("Getting out —\nnot dramatic, but real.", "section_title"),
+    spacer(6),
+    body("My way out didn't begin with a big speech. It began with honesty."),
+    italic('"If this isn\'t where we\'re meant to be, please rescue us."'),
+    spacer(6),
+    body("Things I had to accept:"),
+    *bullet("I can't force clarity where there is defensiveness."),
+    *bullet("I can't produce humility in others."),
+    *bullet("I don't have to stay just because I've already paid so much."),
+    *bullet("I don't have to rush."),
+    *bullet("I don't have to isolate."),
+    spacer(10),
+    *pull_quote("Sometimes the most faithful step is simple: leave the room, even if you still love the people."),
+    lesson_box("You don't 'argue your way' out of control. You build clarity, support, and a next step."),
+    spacer(4),
+    action_box([
+        "Build a small support circle (1–3 people you fully trust).",
+        "Get practical: documents, finances, timeline, housing, work, childcare.",
+        "Don't announce early if it risks retaliation or chaos.",
+    ]),
+    PageBreak(),
+]
+ 
+# ─── CH 7: RECOVERY ──────────────────────────────────────
+story += [
+    label("08 — Recovery"),
+    title("The messy middle."),
+    body("Recovery wasn't instant. It was — and is — a messy middle."),
+    spacer(6),
+    body("Rebuilding looked like:"),
+    *bullet("Recalibration and reflection"),
+    *bullet("Journaling — facts + feelings"),
+    *bullet("Honest friendships and safe, unmasked conversations"),
+    *bullet("Rest, walking, parks, cycling"),
+    *bullet("Family time and presence"),
+    *bullet("Healthier rhythms: sleep, meals, Sabbath"),
+    spacer(8),
+    body("I began to want a different kind of faith and life — integrated, not compartmentalized. Truth and mercy. Presence over performance. More life-giving than impressive."),
+    spacer(6),
+    body("Lessons I'm still learning:"),
+    *bullet("Leaving is not always failure."),
+    *bullet("Forgiveness can happen without pretending trust is intact."),
+    *bullet("Disruption can be mercy."),
+    *bullet("Healing takes time."),
+    spacer(10),
+    lesson_box("Healing usually starts with rhythm, safety, and truth-telling — not with 'moving on quickly.'"),
+    spacer(4),
+    action_box([
+        "Pick 3 stabilizers: sleep + movement + one safe friend.",
+        "Give yourself a 'no rush' rule: don't replace one system with another too fast.",
+    ]),
+    PageBreak(),
+]
+ 
+# ─── PRACTICAL PAGES ─────────────────────────────────────
+story += [
+    label("09 — Practical Pages"),
+    title("For each place\nyou might be standing."),
+    spacer(4),
+]
+ 
+# Currently inside
+story += [
+    Paragraph("If you're currently inside", styles["sub_title"]),
+    body("Don't ignore your nervous system. Pay attention to what your body is telling you."),
+    body("Ask yourself:"),
+]
+questions_inside = [
+    "Am I free to ask honest questions without punishment?",
+    "When I raise concerns, do I get clarity — or defensiveness?",
+    "Is there transparency around decisions, money, and leadership?",
+    "Are people treated like people — or like fuel?",
+    "Is fear used to keep people compliant?",
+    "Do I feel more grounded and honest — or more dependent on the group?",
+]
+for q in questions_inside:
+    story.append(Paragraph(f"☐  {q}", ParagraphStyle("chk",
+        fontName="Poppins", fontSize=9, leading=16, textColor=CHARCOAL_M,
+        leftIndent=8, spaceAfter=4)))
+ 
+story += [
+    spacer(6),
+    lesson_box('"Love" that requires your silence is not love.'),
+    spacer(4),
+    action_box([
+        "Write down patterns as they happen. The log becomes clarity.",
+        "Talk to 1–2 safe people outside the group.",
+        "Don't make huge decisions under pressure.",
+        "Protect your children's emotional safety above all else.",
+    ]),
+    *section_divider("Recently left"),
+]
+ 
+# Recently left
+story += [
+    Paragraph("If you recently left", styles["sub_title"]),
+    body("You may feel relief and grief at the same time. Anger and guilt. Clarity and confusion. All of that is allowed."),
+    *bullet("Stabilize sleep, food, body, schedule"),
+    *bullet("Reconnect with safe relationships"),
+    *bullet("Give yourself a 'no big decisions' window"),
+    *bullet("Journal your story in facts + feelings"),
+    *bullet("Rebuild your inner life without performance or pressure"),
+    spacer(8),
+    lesson_box("Grief is not proof you made the wrong decision. It's proof it mattered."),
+    spacer(4),
+    action_box([
+        "Keep life small for a while.",
+        "Find a steady rhythm. Let your story come back in pieces.",
+    ]),
+    *section_divider("About to join"),
+]
+ 
+# About to join
+story += [
+    Paragraph("If you're about to join something", styles["sub_title"]),
+    body("Let excitement be real — but don't outsource discernment."),
+    body("Check:"),
+]
+questions_join = [
+    "Do they welcome questions openly?",
+    "Do they pressure urgency or 'decide now' language?",
+    "Do they isolate you from family or friends?",
+    "Do they blur boundaries — time, money, access to you?",
+    "Do they claim exclusive truth or special status?",
+    "Is accountability real, or just branding?",
+]
+for q in questions_join:
+    story.append(Paragraph(f"☐  {q}", ParagraphStyle("chk2",
+        fontName="Poppins", fontSize=9, leading=16, textColor=CHARCOAL_M,
+        leftIndent=8, spaceAfter=4)))
+ 
+story += [
+    spacer(8),
+    warning_box('A healthy community can say: "Take your time." · "Ask anything." · "Keep your outside relationships." · "No pressure."'),
+    spacer(6),
+    lesson_box("Healthy groups don't need urgency to secure your loyalty."),
+    spacer(4),
+    action_box([
+        "Ask for transparency early: leadership structure, finances, grievance process.",
+        "Keep your money and major life decisions slow.",
+    ]),
+    PageBreak(),
+]
+ 
+# ─── WARNING LIST ─────────────────────────────────────────
+story += [
+    label("10 — My Warning List"),
+    title("What I won't normalize."),
+    body("These are the reframings I learned to see through — the costume that control wears."),
+    spacer(12),
+]
+ 
+warnings = [
+    ("Coercion", "framed as calling"),
+    ("Control", "framed as love"),
+    ("Secrecy", "framed as wisdom"),
+    ("Urgency", "framed as faith"),
+    ("Shaming", "framed as discipleship"),
+    ("Performance", "framed as devotion"),
+]
+ 
+warn_data = []
+for real, reframe in warnings:
+    warn_data.append([
+        Paragraph(real, ParagraphStyle("wr",
+            fontName="PoppinsM", fontSize=11, leading=16, textColor=CORAL_TEXT)),
+        Paragraph(reframe, ParagraphStyle("wrf",
+            fontName="PoppinsL", fontSize=10, leading=16, textColor=GRAY_WARM)),
+    ])
+ 
+warn_table = Table(warn_data, colWidths=[50*mm, W-ML-MR-54*mm])
+warn_table.setStyle(TableStyle([
+    ("VALIGN", (0,0), (-1,-1), "MIDDLE"),
+    ("TOPPADDING", (0,0), (-1,-1), 10),
+    ("BOTTOMPADDING", (0,0), (-1,-1), 10),
+    ("LEFTPADDING", (0,0), (-1,-1), 12),
+    ("RIGHTPADDING", (0,0), (-1,-1), 12),
+    ("LINEBELOW", (0,0), (-1,-2), 0.4, GRAY_LIGHT),
+    ("ROWBACKGROUNDS", (0,0), (-1,-1), [WHITE, CREAM]),
+]))
+story.append(warn_table)
+story += [
+    spacer(12),
+    lesson_box("Anything that requires your disappearance to belong is not safe."),
+    spacer(4),
+    action_box([
+        "Use this as a personal boundary list. If a space repeatedly crosses it, take that seriously.",
+    ]),
+    PageBreak(),
+]
+ 
+# ─── APPENDIX ─────────────────────────────────────────────
+story += [
+    label("Appendix — Quick Checklist"),
+    title("Red flags at a glance."),
+    body("Use this as a rapid reference. The more boxes that apply, the more caution is warranted."),
+    spacer(12),
+]
+ 
+appendix_items = [
+    "Questions are punished or dismissed",
+    "Transparency is missing or blocked",
+    "Decisions are centralized and unquestionable",
+    '"Special revelation" or elite language used to control',
+    "Outsiders portrayed as unsafe",
+    "Shame and fear used for compliance",
+    "Boundaries violated: time, money, privacy",
+    "People are used, discarded, or silenced",
+    "Image protected over truth and repair",
+    "Urgency used to secure loyalty or decisions",
+]
+ 
+app_col_w = (W - ML - MR - 6*mm) / 2
+app_left = appendix_items[:5]
+app_right = appendix_items[5:]
+ 
+def app_cell(items):
+    return [
+        Paragraph(f"☐   {item}", ParagraphStyle("appc",
+            fontName="Poppins", fontSize=8.5, leading=15, textColor=CHARCOAL_M,
+            leftIndent=4, spaceAfter=4))
+        for item in items
+    ]
+ 
+app_table = Table([[app_cell(app_left), app_cell(app_right)]], colWidths=[app_col_w, app_col_w])
+app_table.setStyle(TableStyle([
+    ("VALIGN", (0,0), (-1,-1), "TOP"),
+    ("TOPPADDING", (0,0), (-1,-1), 12),
+    ("BOTTOMPADDING", (0,0), (-1,-1), 12),
+    ("LEFTPADDING", (0,0), (-1,-1), 14),
+    ("RIGHTPADDING", (0,0), (-1,-1), 14),
+    ("BOX", (0,0), (0,0), 0.5, GRAY_LIGHT),
+    ("BOX", (1,0), (1,0), 0.5, GRAY_LIGHT),
+    ("BACKGROUND", (0,0), (-1,-1), WHITE),
+]))
+story.append(app_table)
+story.append(spacer(20))
+story.append(PageBreak())
+ 
+# ─── CLOSING PAGE ─────────────────────────────────────────
+ 
+class ClosingPage(Flowable):
+    def __init__(self):
+        super().__init__()
+        self.width, self.height = A4
+ 
+    def wrap(self, aw, ah):
+        return self.width, self.height
+ 
+    def draw(self):
+        c = self.canv
+        w, h = self.width, self.height
+        c.setFillColor(TEAL)
+        c.rect(0, 0, w, h, stroke=0, fill=1)
+ 
+        c.setFont("Mono", 7.5)
+        c.setFillColor(colors.HexColor("#ffffff55"))
+        c.drawCentredString(w/2, h - 55*mm, "CLOSING WORDS")
+ 
+        c.setFont("Lora", 30)
+        c.setFillColor(WHITE)
+        c.drawCentredString(w/2, h - 85*mm, "May you recover your voice.")
+ 
+        c.setStrokeColor(colors.HexColor("#ffffff22"))
+        c.setLineWidth(0.7)
+        c.line(w/2 - 20*mm, h - 97*mm, w/2 + 20*mm, h - 97*mm)
+ 
+        c.setFont("LoraI", 12)
+        c.setFillColor(colors.HexColor("#ffffffcc"))
+        lines = [
+            "If you're reading this while your world is shaking:",
+            "may you find safe people, clear thinking,",
+            "and quiet strength.",
+            " ",
+            "May you learn again that love",
+            "does not require your disappearance.",
+        ]
+        for i, line in enumerate(lines):
+            c.drawCentredString(w/2, h - 112*mm - i*18, line)
+ 
+        c.setStrokeColor(colors.HexColor("#ffffff22"))
+        c.line(w/2 - 20*mm, h - 225*mm, w/2 + 20*mm, h - 225*mm)
+ 
+        c.setFont("Mono", 7.5)
+        c.setFillColor(colors.HexColor("#ffffff33"))
+        c.drawCentredString(w/2, 28*mm, "DECULTIVATE — THE WORKBOOK")
+ 
+story.append(NextPageCanvas("closing"))
+ 
+# ─── BUILD ────────────────────────────────────────────────
+output_path = "/mnt/user-data/outputs/decultivate-workbook.pdf"
+ 
+from reportlab.platypus import BaseDocTemplate, Frame, PageTemplate
+ 
+def cover_page_fn(canvas, doc):
+    w, h = A4
+    canvas.saveState()
+    # Background
+    canvas.setFillColor(TEAL)
+    canvas.rect(0, 0, w, h, stroke=0, fill=1)
+    canvas.setFillColor(colors.HexColor("#0a5a4f"))
+    canvas.ellipse(w*0.05, h*0.3, w*0.55, h*0.85, stroke=0, fill=1)
+    canvas.setFillColor(TEAL)
+    canvas.ellipse(w*0.1, h*0.35, w*0.5, h*0.82, stroke=0, fill=1)
+ 
+    canvas.setFont("Mono", 7.5)
+    canvas.setFillColor(colors.HexColor("#ffffff55"))
+    canvas.drawCentredString(w/2, h - 48*mm, "A LIVED-EXPERIENCE WORKBOOK")
+ 
+    canvas.setFont("Lora", 64)
+    canvas.setFillColor(colors.HexColor("#ffffff35"))
+    canvas.drawString(w/2 - 115*mm, h - 80*mm, "DE")
+ 
+    canvas.setFont("Lora", 64)
+    canvas.setFillColor(colors.HexColor("#f5a623"))
+    canvas.drawString(w/2 - 68*mm, h - 80*mm, "CULT")
+ 
+    canvas.setFont("Lora", 64)
+    canvas.setFillColor(WHITE)
+    canvas.drawString(w/2 + 12*mm, h - 80*mm, "IVATE")
+ 
+    canvas.setFont("Mono", 8)
+    canvas.setFillColor(colors.HexColor("#ffffffaa"))
+    canvas.drawCentredString(w/2, h - 95*mm, "ARE YOU IN ONE?")
+ 
+    canvas.setFont("LoraI", 12)
+    canvas.setFillColor(colors.HexColor("#ffffffcc"))
+    tag_lines = [
+        "Trapped in the shadows of control,",
+        "individuals lose themselves to manipulation.",
+        "Yet within every story of captivity lies",
+        "the powerful potential for freedom.",
+    ]
+    for i, line in enumerate(tag_lines):
+        canvas.drawCentredString(w/2, h - 112*mm - i*16, line)
+ 
+    strip_y = h - 158*mm
+    strip_h = 13*mm
+    labels_trio = ["SPOT IT", "LEAVE IT", "RECOVER"]
+    for i, lbl in enumerate(labels_trio):
+        bx = w/2 - 54*mm + i*36*mm
+        canvas.setFillColor(colors.HexColor("#00000044"))
+        canvas.roundRect(bx, strip_y, 34*mm, strip_h, 2, stroke=0, fill=1)
+        canvas.setFont("Mono", 7.5)
+        canvas.setFillColor(colors.HexColor("#ffffffbb"))
+        canvas.drawCentredString(bx + 17*mm, strip_y + 4.5*mm, lbl)
+ 
+    canvas.setFont("PoppinsB", 11)
+    canvas.setFillColor(WHITE)
+    canvas.drawCentredString(w/2, 28*mm, "THE WORKBOOK")
+ 
+    canvas.setStrokeColor(colors.HexColor("#ffffff22"))
+    canvas.setLineWidth(0.5)
+    canvas.line(ML, 22*mm, w - MR, 22*mm)
+    canvas.restoreState()
+ 
+ 
+def closing_page_fn(canvas, doc):
+    w, h = A4
+    canvas.saveState()
+    canvas.setFillColor(TEAL)
+    canvas.rect(0, 0, w, h, stroke=0, fill=1)
+ 
+    canvas.setFont("Mono", 7.5)
+    canvas.setFillColor(colors.HexColor("#ffffff55"))
+    canvas.drawCentredString(w/2, h - 55*mm, "CLOSING WORDS")
+ 
+    canvas.setFont("Lora", 30)
+    canvas.setFillColor(WHITE)
+    canvas.drawCentredString(w/2, h - 82*mm, "May you recover your voice.")
+ 
+    canvas.setStrokeColor(colors.HexColor("#ffffff22"))
+    canvas.setLineWidth(0.7)
+    canvas.line(w/2 - 20*mm, h - 95*mm, w/2 + 20*mm, h - 95*mm)
+ 
+    canvas.setFont("LoraI", 12)
+    canvas.setFillColor(colors.HexColor("#ffffffcc"))
+    closing_lines = [
+        "If you're reading this while your world is shaking:",
+        "may you find safe people, clear thinking,",
+        "and quiet strength.",
+        " ",
+        "May you learn again that love",
+        "does not require your disappearance.",
+    ]
+    for i, line in enumerate(closing_lines):
+        canvas.drawCentredString(w/2, h - 112*mm - i*18, line)
+ 
+    canvas.line(w/2 - 20*mm, h - 228*mm, w/2 + 20*mm, h - 228*mm)
+ 
+    canvas.setFont("Mono", 7.5)
+    canvas.setFillColor(colors.HexColor("#ffffff33"))
+    canvas.drawCentredString(w/2, 28*mm, "DECULTIVATE — THE WORKBOOK")
+    canvas.restoreState()
+ 
+ 
+page_num_counter = [0]
+ 
+def on_page_cover(canvas, doc):
+    cover_page_fn(canvas, doc)
+ 
+def on_page_inner(canvas, doc):
+    page_num_counter[0] += 1
+    pn = page_num_counter[0]
+    canvas.saveState()
+    canvas.setFont("Mono", 7)
+    canvas.setFillColor(GRAY_WARM)
+    canvas.drawCentredString(W/2, 12*mm, f"— {pn} —")
+    canvas.drawString(ML, H - 12*mm, "DECULTIVATE  ·  THE WORKBOOK")
+    canvas.drawRightString(W - MR, H - 12*mm, "decultivate.co")
+    canvas.setStrokeColor(GRAY_LIGHT)
+    canvas.setLineWidth(0.4)
+    canvas.line(ML, H - 14*mm, W - MR, H - 14*mm)
+    canvas.line(ML, 15*mm, W - MR, 15*mm)
+    canvas.restoreState()
+ 
+def on_page_closing(canvas, doc):
+    closing_page_fn(canvas, doc)
+ 
+ 
+class DecultivateDoc(BaseDocTemplate):
+    def __init__(self, filename, **kw):
+        super().__init__(filename, **kw)
+        self._current_template = "cover"
+        normal_frame = Frame(ML, MB + 8*mm, W-ML-MR, H-MT-MB-20*mm, id='normal')
+        self.addPageTemplates([
+            PageTemplate(id='cover', frames=[normal_frame], onPage=on_page_cover),
+            PageTemplate(id='inner', frames=[normal_frame], onPage=on_page_inner),
+            PageTemplate(id='closing', frames=[normal_frame], onPage=on_page_closing),
+        ])
+ 
+from reportlab.platypus import NextPageTemplate
+ 
+# Rebuild story with proper template switching
+new_story = [NextPageTemplate('cover'), PageBreak()]  # cover is first
+new_story += [NextPageTemplate('inner'), PageBreak()]  # switch to inner after cover
+new_story += story[1:]  # skip the first PageBreak we already had after CoverPage
+ 
+# Replace the ClosingPage marker
+fixed_story = []
+for item in new_story:
+    if isinstance(item, NextPageCanvas):
+        fixed_story.append(NextPageTemplate('closing'))
+        fixed_story.append(PageBreak())
+    else:
+        fixed_story.append(item)
+ 
+doc = DecultivateDoc(
+    output_path,
+    pagesize=A4,
+    leftMargin=ML,
+    rightMargin=MR,
+    topMargin=MT + 8*mm,
+    bottomMargin=MB + 8*mm,
+    title="DECULTIVATE — The Workbook",
+    author="Decultivate",
+    subject="Spot it. Leave it. Recover.",
+)
+ 
+doc.build(fixed_story)
+print(f"PDF created: {output_path}")
+ 
