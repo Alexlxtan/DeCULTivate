@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DECULTIVATE — The Workbook</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --teal: #1a7a6a;
+    --teal-deep: #0d5247;
+    --teal-light: #e8f5f2;
+    --teal-mid: #4da894;
+    --amber: #d4820a;
+    --amber-light: #fef3e2;
+    --amber-warm: #f5a623;
+    --ivory: #faf8f4;
+    --cream: #f2efe8;
+    --charcoal: #1e1e1e;
+    --charcoal-mid: #3a3a3a;
+    --gray-warm: #8a8078;
+    --gray-light: #e8e4dc;
+    --white: #ffffff;
+    --danger-soft: #fdf0ee;
+    --danger-border: #e8a598;
+    --danger-text: #8b3a2f;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--ivory);
+    color: var(--charcoal);
+    font-size: 17px;
+    line-height: 1.75;
+  }
+
+  /* ── COVER ── */
+  .cover {
+    min-height: 100vh;
+    background: #0d6b5e;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    padding: 4rem 2rem;
+  }
+
+  .cover::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 30% 40%, rgba(255,255,255,0.04) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 70%, rgba(0,0,0,0.2) 0%, transparent 60%);
+  }
+
+  .cover-inner {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    max-width: 700px;
+  }
+
+  .cover-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 2rem;
+  }
+
+  .cover-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(4rem, 12vw, 9rem);
+    font-weight: 900;
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+    color: var(--white);
+    margin-bottom: 0.2em;
+  }
+
+  .cover-title span.de {
+    color: rgba(255,255,255,0.35);
+  }
+  .cover-title span.cult {
+    color: #f5a623;
+  }
+
+  .cover-subtitle {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.6);
+    margin: 1.5rem 0 2.5rem;
+  }
+
+  .cover-tagline {
+    font-size: 1.1rem;
+    color: rgba(255,255,255,0.75);
+    font-style: italic;
+    font-family: 'Playfair Display', serif;
+    max-width: 420px;
+    margin: 0 auto 3rem;
+    line-height: 1.6;
+  }
+
+  .cover-trio {
+    display: flex;
+    gap: 1px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 2px;
+    overflow: hidden;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.6);
+  }
+  .cover-trio span {
+    padding: 0.6rem 1.4rem;
+    background: rgba(0,0,0,0.25);
+    flex: 1;
+    text-align: center;
+  }
+
+  .cover-scroll {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(255,255,255,0.3);
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.15em;
+  }
+  .cover-scroll::after {
+    content: '';
+    width: 1px;
+    height: 40px;
+    background: rgba(255,255,255,0.2);
+  }
+
+  /* ── LAYOUT ── */
+  .page {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 5rem 2.5rem;
+  }
+
+  .page + .page {
+    border-top: 1px solid var(--gray-light);
+  }
+
+  /* ── SECTION HEADERS ── */
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 0.75rem;
+  }
+
+  .section-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--gray-warm);
+    margin-bottom: 0.5rem;
+  }
+
+  h1.page-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--charcoal);
+    margin-bottom: 1.5rem;
+  }
+
+  h2.section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--charcoal);
+    margin-bottom: 1rem;
+  }
+
+  h3.sub-title {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: var(--teal-deep);
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+    margin-top: 2rem;
+  }
+
+  p {
+    color: var(--charcoal-mid);
+    margin-bottom: 1.1rem;
+  }
+
+  em {
+    font-style: italic;
+    color: var(--charcoal);
+  }
+
+  /* ── CALLOUT BOXES ── */
+  .callout-lesson {
+    background: var(--teal-light);
+    border-left: 3px solid var(--teal);
+    border-radius: 0 8px 8px 0;
+    padding: 1.25rem 1.5rem;
+    margin: 2rem 0 0;
+  }
+
+  .callout-lesson .callout-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 0.5rem;
+  }
+
+  .callout-lesson p {
+    color: var(--teal-deep);
+    font-size: 1rem;
+    margin: 0;
+    font-style: italic;
+  }
+
+  .callout-action {
+    background: var(--amber-light);
+    border-left: 3px solid var(--amber);
+    border-radius: 0 8px 8px 0;
+    padding: 1.25rem 1.5rem;
+    margin: 0.75rem 0 2rem;
+  }
+
+  .callout-action .callout-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 0.5rem;
+  }
+
+  .callout-action ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .callout-action ul li {
+    color: #6b4a0a;
+    font-size: 0.97rem;
+    padding: 0.25rem 0;
+    padding-left: 1.25rem;
+    position: relative;
+  }
+
+  .callout-action ul li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--amber);
+    font-size: 0.9rem;
+  }
+
+  /* ── WARNING CALLOUT ── */
+  .callout-warning {
+    background: var(--danger-soft);
+    border-left: 3px solid var(--danger-border);
+    border-radius: 0 8px 8px 0;
+    padding: 1.25rem 1.5rem;
+    margin: 1.5rem 0;
+  }
+  .callout-warning .callout-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--danger-text);
+    margin-bottom: 0.5rem;
+  }
+  .callout-warning p, .callout-warning li {
+    color: var(--danger-text);
+    font-size: 0.97rem;
+  }
+
+  /* ── QUICK START CARDS ── */
+  .quickstart-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin: 2.5rem 0;
+  }
+
+  .qs-card {
+    background: var(--white);
+    border: 1px solid var(--gray-light);
+    border-radius: 12px;
+    padding: 1.5rem;
+    position: relative;
+  }
+
+  .qs-card.teal { border-top: 3px solid var(--teal); }
+  .qs-card.amber { border-top: 3px solid var(--amber); }
+  .qs-card.coral { border-top: 3px solid #c0735a; }
+
+  .qs-card-header {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+
+  .qs-card.teal .qs-card-header { color: var(--teal); }
+  .qs-card.amber .qs-card-header { color: var(--amber); }
+  .qs-card.coral .qs-card-header { color: #c0735a; }
+
+  .qs-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--charcoal);
+  }
+
+  .qs-steps {
+    list-style: none;
+    padding: 0;
+    counter-reset: step;
+  }
+
+  .qs-steps li {
+    counter-increment: step;
+    padding: 0.5rem 0 0.5rem 2rem;
+    position: relative;
+    font-size: 0.9rem;
+    color: var(--charcoal-mid);
+    border-bottom: 1px solid var(--gray-light);
+  }
+
+  .qs-steps li:last-child { border-bottom: none; }
+
+  .qs-steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 0.5rem;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .qs-card.teal .qs-steps li::before { background: var(--teal-light); color: var(--teal); }
+  .qs-card.amber .qs-steps li::before { background: var(--amber-light); color: var(--amber); }
+  .qs-card.coral .qs-steps li::before { background: #fdf2ee; color: #c0735a; }
+
+  .qs-steps li em {
+    display: block;
+    font-size: 0.82rem;
+    color: var(--gray-warm);
+    margin-top: 0.2rem;
+    font-style: italic;
+  }
+
+  /* ── KEY TERMS ── */
+  .terms-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin: 2rem 0;
+  }
+
+  .term-card {
+    background: var(--white);
+    border: 1px solid var(--gray-light);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  .term-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--teal-deep);
+    line-height: 1.3;
+  }
+
+  .term-def {
+    font-size: 0.93rem;
+    color: var(--charcoal-mid);
+    line-height: 1.65;
+  }
+
+  .term-def strong {
+    display: block;
+    font-weight: 500;
+    color: var(--charcoal);
+    font-size: 0.88rem;
+    margin-bottom: 0.25rem;
+  }
+
+  /* ── RED FLAGS ── */
+  .flag-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    margin: 2rem 0;
+  }
+
+  .flag-card {
+    background: var(--white);
+    border: 1px solid var(--gray-light);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+  }
+
+  .flag-card-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gray-warm);
+    margin-bottom: 0.4rem;
+  }
+
+  .flag-card h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--charcoal);
+    margin-bottom: 0.75rem;
+  }
+
+  .flag-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .flag-list li {
+    font-size: 0.88rem;
+    color: var(--charcoal-mid);
+    padding: 0.2rem 0 0.2rem 1.1rem;
+    position: relative;
+  }
+
+  .flag-list li::before {
+    content: '·';
+    position: absolute;
+    left: 0;
+    color: var(--teal);
+    font-size: 1.2rem;
+    line-height: 1;
+    top: 0.25rem;
+  }
+
+  /* ── COST TABLE ── */
+  .cost-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+
+  .cost-col {
+    padding: 1.5rem;
+    border-radius: 10px;
+  }
+
+  .cost-col.staying {
+    background: #fdf0ee;
+    border: 1px solid var(--danger-border);
+  }
+
+  .cost-col.leaving {
+    background: var(--teal-light);
+    border: 1px solid #b0d8cf;
+  }
+
+  .cost-col-header {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  .cost-col.staying .cost-col-header { color: var(--danger-text); }
+  .cost-col.leaving .cost-col-header { color: var(--teal); }
+
+  .cost-col ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .cost-col ul li {
+    font-size: 0.93rem;
+    padding: 0.3rem 0;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+  }
+
+  .cost-col.staying ul li { color: #7a3a30; }
+  .cost-col.leaving ul li { color: var(--teal-deep); }
+
+  /* ── TOC ── */
+  .toc {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    margin: 2rem 0;
+    border: 1px solid var(--gray-light);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--white);
+  }
+
+  .toc-item {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 0.9rem 1.5rem;
+    border-bottom: 1px solid var(--gray-light);
+    transition: background 0.15s;
+  }
+
+  .toc-item:last-child { border-bottom: none; }
+
+  .toc-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--gray-warm);
+    min-width: 24px;
+  }
+
+  .toc-label {
+    font-size: 0.95rem;
+    color: var(--charcoal-mid);
+    flex: 1;
+  }
+
+  .toc-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--gray-light);
+  }
+
+  /* ── CHECKLIST ── */
+  .checklist {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0;
+  }
+
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--gray-light);
+    font-size: 0.95rem;
+    color: var(--charcoal-mid);
+  }
+
+  .checklist li:last-child { border-bottom: none; }
+
+  .check-box {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    border: 1.5px solid var(--gray-warm);
+    border-radius: 3px;
+    margin-top: 3px;
+  }
+
+  /* ── PULL QUOTE ── */
+  .pull-quote {
+    border-left: 3px solid var(--amber-warm);
+    padding: 1rem 2rem;
+    margin: 2.5rem 0;
+  }
+
+  .pull-quote p {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    font-style: italic;
+    line-height: 1.6;
+    color: var(--charcoal);
+    margin: 0;
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 3rem 0;
+    color: var(--gray-warm);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  .divider::before,
+  .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--gray-light);
+  }
+
+  /* ── WARNING LIST ── */
+  .warning-list {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .warning-list li {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--gray-light);
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    font-size: 0.95rem;
+    color: var(--charcoal-mid);
+  }
+
+  .warning-list li::before {
+    content: '✕';
+    color: var(--danger-text);
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-top: 3px;
+    min-width: 16px;
+  }
+
+  .warning-list li span.real { color: var(--danger-text); font-weight: 500; }
+  .warning-list li span.reframe { color: var(--gray-warm); font-size: 0.88rem; }
+
+  /* ── APPENDIX CHECKLIST ── */
+  .appendix-check {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin: 2rem 0;
+  }
+
+  .appendix-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    background: var(--white);
+    border: 1px solid var(--gray-light);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.88rem;
+    color: var(--charcoal-mid);
+  }
+
+  .appendix-item .check-box {
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    border-color: var(--danger-border);
+  }
+
+  /* ── CLOSING ── */
+  .closing {
+    background: #0d6b5e;
+    color: var(--white);
+    padding: 6rem 2.5rem;
+    text-align: center;
+  }
+
+  .closing .eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 2rem;
+  }
+
+  .closing h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--white);
+    max-width: 560px;
+    margin: 0 auto 2rem;
+  }
+
+  .closing p {
+    color: rgba(255,255,255,0.65);
+    font-size: 1.05rem;
+    font-style: italic;
+    font-family: 'Playfair Display', serif;
+    max-width: 480px;
+    margin: 0 auto 1rem;
+  }
+
+  .closing .closing-rule {
+    width: 40px;
+    height: 2px;
+    background: rgba(255,255,255,0.2);
+    margin: 2.5rem auto;
+  }
+
+  /* ── NAV ── */
+  .nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: rgba(13,107,94,0.95);
+    backdrop-filter: blur(8px);
+    padding: 0.9rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .nav-brand {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    color: rgba(255,255,255,0.7);
+    text-transform: uppercase;
+  }
+
+  .nav-brand strong {
+    color: var(--white);
+    font-weight: 500;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--white); }
+
+  /* ── INTRO NOTE ── */
+  .intro-note {
+    background: var(--cream);
+    border: 1px solid var(--gray-light);
+    border-radius: 12px;
+    padding: 2rem 2.5rem;
+    margin: 2.5rem 0;
+    position: relative;
+  }
+
+  .intro-note::before {
+    content: '"';
+    font-family: 'Playfair Display', serif;
+    font-size: 5rem;
+    color: var(--gray-light);
+    position: absolute;
+    top: -0.5rem;
+    left: 1.5rem;
+    line-height: 1;
+  }
+
+  .intro-note p {
+    font-style: italic;
+    color: var(--charcoal-mid);
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── RECOVERY GRID ── */
+  .recovery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+    margin: 2rem 0;
+  }
+
+  .recovery-item {
+    background: var(--white);
+    border: 1px solid var(--gray-light);
+    border-radius: 10px;
+    padding: 1.25rem 1rem;
+    text-align: center;
+  }
+
+  .recovery-item .r-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .recovery-item p {
+    font-size: 0.85rem;
+    color: var(--charcoal-mid);
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  /* ── UTILITY ── */
+  .mt-sm { margin-top: 1rem; }
+  .mt-md { margin-top: 2rem; }
+  .mt-lg { margin-top: 3rem; }
+
+  ul.prose-list {
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  ul.prose-list li {
+    color: var(--charcoal-mid);
+    font-size: 0.97rem;
+    padding: 0.15rem 0;
+  }
+
+  @media (max-width: 600px) {
+    .term-card { grid-template-columns: 1fr; gap: 0.5rem; }
+    .cost-compare { grid-template-columns: 1fr; }
+    .appendix-check { grid-template-columns: 1fr; }
+    .nav-links { display: none; }
+    .cover-title { font-size: 4rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-brand"><strong>DE</strong>CULTIVATE</div>
+  <ul class="nav-links">
+    <li><a href="#quick-start">Quick Start</a></li>
+    <li><a href="#key-terms">Terms</a></li>
+    <li><a href="#red-flags">Red Flags</a></li>
+    <li><a href="#recovery">Recovery</a></li>
+    <li><a href="#appendix">Appendix</a></li>
+  </ul>
+</nav>
+
+<!-- COVER -->
+<section class="cover" style="padding-top:6rem;">
+  <div class="cover-inner">
+    <p class="cover-eyebrow">A lived-experience workbook</p>
+    <h1 class="cover-title">
+      <span class="de">DE</span><span class="cult">CULT</span>IVATE
+    </h1>
+    <p class="cover-subtitle">Are you in one? &nbsp;·&nbsp; How to spot one. Get out. Recover.</p>
+    <p class="cover-tagline">Trapped in the shadows of control, individuals lose themselves to manipulation. Yet within every story of captivity lies the powerful potential for freedom.</p>
+    <div class="cover-trio">
+      <span>Spot it</span>
+      <span>Leave it</span>
+      <span>Recover</span>
+    </div>
+  </div>
+  <div class="cover-scroll">scroll</div>
+</section>
+
+<!-- BEFORE WE BEGIN -->
+<section class="page" id="before">
+  <div class="section-label">A note before we begin</div>
+  <h1 class="page-title">You may not be crazy for feeling that tension.</h1>
+
+  <div class="intro-note">
+    <p>I'm writing this like I write in my Evernote — not polished, not trying to sound impressive. Just honest. I'm not here to label every intense community a "cult." I am here to name what I experienced when something started to feel <em>cultish</em> — controlling, narrative-protecting, emotionally expensive — and what it cost to stay, and what it cost to leave.</p>
+  </div>
+
+  <p>This is not professional counseling or legal advice. It's a lived-experience map + lessons learned. I write from a faith perspective, but I'm keeping this broadly accessible. You don't have to share my beliefs to benefit from the patterns.</p>
+
+  <ul class="prose-list">
+    <li>If you're currently in a space that feels unsafe: you may not be crazy for feeling that tension.</li>
+    <li>If you've just left: you might be both grieving and relieved at the same time. Both can be true.</li>
+    <li>If you're about to join something: excitement can be real, but discernment matters at every juncture.</li>
+  </ul>
+
+  <div class="callout-lesson">
+    <div class="callout-label">Lesson</div>
+    <p>Confusion doesn't always mean you're "too sensitive." Sometimes it means your internal warning system is working.</p>
+  </div>
+  <div class="callout-action">
+    <div class="callout-label">What to do</div>
+    <ul>
+      <li>Slow down and name what you're experiencing in one sentence.</li>
+      <li>If you're in danger — emotionally, physically, financially — prioritize safety and outside support first.</li>
+    </ul>
+  </div>
+
+  <!-- TOC -->
+  <div class="divider">Contents</div>
+  <div class="toc" id="toc">
+    <div class="toc-item"><span class="toc-num">00</span><span class="toc-label">Quick Start — If you're in, out, or about to join</span><div class="toc-dot"></div></div>
+    <div class="toc-item"><span class="toc-num">01</span><span class="toc-label">Key Terms</span><div class="toc-dot"></div></div>
+    <div class="toc-item"><span class="toc-num">02</span><span class="toc-label">How it starts (the good is real)</span><div class="toc-dot"></div></div>
+    <div class="toc-item"><span class="toc-num">03</span><span class="toc-label">The subtle shift (when it becomes lopsided)</span><div class="toc-dot"></div></div>
+    <div class="toc-item"><span class="toc-num">04</span><span class="toc-label">What it does inside you (pain points)</span><div class="toc-dot"></div></div>
+    <div class="toc-item"><span class="toc-num">05</span><span class="toc-label">Red flags I wish I named earlier</span><div class="toc-dot"></div></div>
+    <div class="toc-item"><span class="toc-num">06</span><span class="toc-label">The price to pay — staying vs leaving</span><div class="toc-dot"></div></div>
+    <div class="toc-item"><span class="toc-num">07</span><span class="toc-label">Getting out (not dramatic, but real)</span><div class="toc-dot"></div></div>
+    <div class="toc-item"><span class="toc-num">08</span><span class="toc-label">Recovery: the messy middle</span><div class="toc-dot"></div></div>
+    <div class="toc-item"><span class="toc-num">09</span><span class="toc-label">Practical pages (in / out / at risk)</span><div class="toc-dot"></div></div>
+    <div class="toc-item"><span class="toc-num">10</span><span class="toc-label">My warning list</span><div class="toc-dot"></div></div>
+    <div class="toc-item"><span class="toc-num">11</span><span class="toc-label">Appendix: quick red-flag checklist</span><div class="toc-dot"></div></div>
+  </div>
+</section>
+
+<!-- QUICK START -->
+<section class="page" id="quick-start">
+  <div class="section-label">Quick Start</div>
+  <h1 class="page-title">Wherever you are — start here.</h1>
+  <p>Don't know what section fits your situation? Use this page first. Five steps for three different places you might be standing right now.</p>
+
+  <div class="quickstart-grid">
+
+    <div class="qs-card teal">
+      <div class="qs-card-header">If you're still inside</div>
+      <h3>Do these 5 things first</h3>
+      <ol class="qs-steps">
+        <li>Name reality in one sentence.<em>"I feel pressured to comply and punished for questions."</em></li>
+        <li>Track patterns for 2–4 weeks.<em>Date / what happened / how it was handled / cost to you.</em></li>
+        <li>Get outside perspective.<em>1–2 safe people outside the group — friend, mentor, counselor.</em></li>
+        <li>Protect your basics.<em>Sleep, food, work stability, your children's emotional safety, finances.</em></li>
+        <li>Slow major decisions.<em>Don't sign, move, quit, or donate large amounts under urgency.</em></li>
+      </ol>
+    </div>
+
+    <div class="qs-card amber">
+      <div class="qs-card-header">If you've recently left</div>
+      <h3>Do these 5 things first</h3>
+      <ol class="qs-steps">
+        <li>Stabilize your body.<em>Sleep, meals, movement, sunlight.</em></li>
+        <li>Tell the truth in small pieces.<em>Facts + feelings. No rush to make it "sound nice."</em></li>
+        <li>Pick 1–3 safe people.<em>Consistent support beats a big audience.</em></li>
+        <li>Delay big replacements.<em>Don't rush into a new group just to stop the pain.</em></li>
+        <li>Rebuild rhythm before "meaning."<em>Simple routines first; clarity often follows.</em></li>
+      </ol>
+    </div>
+
+    <div class="qs-card coral">
+      <div class="qs-card-header">If you're about to join</div>
+      <h3>Do these 5 things first</h3>
+      <ol class="qs-steps">
+        <li>Ask how dissent is handled.<em>"What happens when leaders are wrong?"</em></li>
+        <li>Ask for transparency early.<em>Leadership structure, money flow, grievance process.</em></li>
+        <li>Keep outside relationships strong.<em>Healthy groups don't require isolation.</em></li>
+        <li>Keep finances and commitments slow.<em>No large donations or relocations under pressure.</em></li>
+        <li>Watch for urgency + monopoly.<em>"Only us. Only here. Only this leader. Decide now."</em></li>
+      </ol>
+    </div>
+
+  </div>
+</section>
+
+<!-- KEY TERMS -->
+<section class="page" id="key-terms">
+  <div class="section-label">01 — Key Terms</div>
+  <h1 class="page-title">A shared language for what happens.</h1>
+  <p>Words help you name what you're experiencing. Once you can name it, you can act on it.</p>
+
+  <div class="terms-grid">
+
+    <div class="term-card">
+      <div class="term-name">Cultish</div>
+      <div class="term-def">A space that may look meaningful on the outside, but uses pressure, control, fear, or manipulation to secure loyalty and protect a narrative.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-name">Control masked as care</div>
+      <div class="term-def"><strong>When guidance becomes coercion:</strong>You're "advised" but not actually free to choose. Disagreement is punished — overtly or subtly.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-name">Coercion</div>
+      <div class="term-def"><strong>Pressure that removes real consent:</strong>"No matter the price" language. Urgency, threats, shaming, or spiritualizing consequences to force compliance.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-name">Narrative protection</div>
+      <div class="term-def">A culture where the story must stay clean, even if the truth is messy. Concerns are minimized or reframed as disloyal. Image management beats repair.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-name">Loyalty tests</div>
+      <div class="term-def">Signals that prove you're "in." Increasing demands — time, money, access. Silence framed as maturity. Agreement required before clarity is provided.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-name">Truth monopoly</div>
+      <div class="term-def">When only a few people are allowed to define reality. "It is decided." Questions are treated like rebellion.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-name">Gaslighting</div>
+      <div class="term-def">A pattern of making you doubt your own perception. "That didn't happen." "You're overreacting." "You misunderstood." — especially when repeated and paired with power.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-name">Boundary erosion</div>
+      <div class="term-def">Your limits become negotiable, theirs become sacred. Time, privacy, money, family, and health are repeatedly crossed without accountability.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-name">Sunk cost</div>
+      <div class="term-def">Staying because you've already paid so much — money, years, friendships, identity, calling, reputation. The investment becomes the trap.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-name">Duality mode</div>
+      <div class="term-def">Functioning outwardly while internally splitting. "I'm fine" on the outside; anxiety and confusion inside.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-name">Enmeshment</div>
+      <div class="term-def">When the group becomes your whole world — leaving feels like losing your identity, relationships, and meaning all at once.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-name">Repair Work</div>
+      <div class="term-def"><strong>A key health marker:</strong>When harm happens, does the group own it, apologize, change, and make it right? Or does it protect the narrative?</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- HOW IT STARTS -->
+<section class="page" id="how-it-starts">
+  <div class="section-number">Chapter 02</div>
+  <h2 class="section-title">How it starts — the good is real.</h2>
+
+  <p>No one sets out to join a cult. It usually doesn't begin with a warning label — but with hope.</p>
+
+  <div class="pull-quote">
+    <p>It usually doesn't begin with a warning label. It begins with hope.</p>
+  </div>
+
+  <p>A shared dream. A strong sense of mission. The language of "family," "unity," "community," "calling" — and people who seem passionate, certain, and all-in. At first, it can feel like relief:</p>
+
+  <p><em>"Finally — people who care. Finally — clarity. Finally — purpose."</em></p>
+
+  <p>And to be fair: there was good in the mix. There was value gained. There was care and concern shown. But that would make it confusing later on — because the good was real, and it was mixed with unhealthy control.</p>
+
+  <div class="callout-lesson">
+    <div class="callout-label">Lesson</div>
+    <p>The good is often real — and it can still be mixed with unhealthy control.</p>
+  </div>
+  <div class="callout-action">
+    <div class="callout-label">What to do</div>
+    <ul>
+      <li>Enjoy the good — but don't rush your discernment.</li>
+      <li>Keep your outside relationships strong: friends, family, mentors.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- THE SUBTLE SHIFT -->
+<section class="page" id="subtle-shift">
+  <div class="section-number">Chapter 03</div>
+  <h2 class="section-title">The subtle shift — when it became lopsided.</h2>
+
+  <p>The shift wasn't one dramatic event. It was a pattern.</p>
+
+  <p>What looked like dialogue became a monologue. What looked like shared vision became vision-preservation. What looked like openness became defensiveness.</p>
+
+  <p>Things I started noticing:</p>
+
+  <ul class="prose-list">
+    <li>Questions being brushed aside</li>
+    <li>Important information withheld or "not clearly announced"</li>
+    <li>Goalposts shifting</li>
+    <li>Passive-aggressive communication</li>
+    <li>"We've done all we can" said with no real willingness to understand</li>
+    <li>An increasing need to be right, stay in control, protect the narrative</li>
+  </ul>
+
+  <div class="callout-warning">
+    <div class="callout-label">Hard truth</div>
+    <p>It can become cultish without anyone ever using the word cult.</p>
+  </div>
+
+  <div class="callout-lesson">
+    <div class="callout-label">Lesson</div>
+    <p>Watch patterns, not charisma. Watch outcomes, not intensity.</p>
+  </div>
+  <div class="callout-action">
+    <div class="callout-label">What to do</div>
+    <ul>
+      <li>Start a simple log: date / what happened / how it was handled / what it cost you.</li>
+      <li>Ask: "When someone raises a concern, do we repair — or do we punish?"</li>
+    </ul>
+  </div>
+</section>
+
+<!-- PAIN POINTS -->
+<section class="page" id="pain-points">
+  <div class="section-number">Chapter 04</div>
+  <h2 class="section-title">What it does inside you — the pain points.</h2>
+
+  <p>This is the part people often don't see. The outside can still look like a community. The inside starts to feel like pressure.</p>
+
+  <ul class="prose-list">
+    <li>Confusion — because love and control get mixed</li>
+    <li>A constant low-grade anxiety</li>
+    <li>Second-guessing yourself for asking normal questions</li>
+    <li>Feeling like you must prove loyalty to be safe</li>
+    <li>Exhaustion from emotionally expensive conversations</li>
+    <li>Discouragement and disillusionment</li>
+    <li>Living in "duality mode" — acting fine while feeling unsettled</li>
+  </ul>
+
+  <div class="pull-quote">
+    <p>"Something is off. And I'm paying for it in my peace."</p>
+  </div>
+
+  <div class="callout-lesson">
+    <div class="callout-label">Lesson</div>
+    <p>Your body often tells the truth before your mind can explain it.</p>
+  </div>
+  <div class="callout-action">
+    <div class="callout-label">What to do</div>
+    <ul>
+      <li>Notice the signals: sleep disruption, appetite changes, dread, tightness, rumination.</li>
+      <li>Talk to one safe person <em>outside</em> the system. Isolation increases control.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- RED FLAGS -->
+<section class="page" id="red-flags">
+  <div class="section-label">05 — Red Flags</div>
+  <h2 class="section-title">Red flags I wish I named earlier.</h2>
+
+  <p>Not every strong leader is controlling. Not every clear doctrine is manipulative. But these were the cultish markers that mattered.</p>
+
+  <div class="flag-grid">
+
+    <div class="flag-card">
+      <div class="flag-card-label">A</div>
+      <h3>Control masked as care</h3>
+      <ul class="flag-list">
+        <li>"We're protecting you" — but you're not allowed to choose</li>
+        <li>"We know what's best" — but you're not allowed to question</li>
+      </ul>
+    </div>
+
+    <div class="flag-card">
+      <div class="flag-card-label">B</div>
+      <h3>Coercion around a grand vision</h3>
+      <ul class="flag-list">
+        <li>"No matter the price" language</li>
+        <li>The mission used to override basic limits: sleep, family, finances, health</li>
+      </ul>
+    </div>
+
+    <div class="flag-card">
+      <div class="flag-card-label">C</div>
+      <h3>Truth monopolies</h3>
+      <ul class="flag-list">
+        <li>Truth handled by a few; others expected to submit</li>
+        <li>"It is decided" — with no feedback loop</li>
+      </ul>
+    </div>
+
+    <div class="flag-card">
+      <div class="flag-card-label">D</div>
+      <h3>Hidden structure, sudden enforcement</h3>
+      <ul class="flag-list">
+        <li>Leadership structure unclear… until it's enforced</li>
+        <li>Decisions made without transparency</li>
+      </ul>
+    </div>
+
+    <div class="flag-card">
+      <div class="flag-card-label">E</div>
+      <h3>Narrative protection</h3>
+      <ul class="flag-list">
+        <li>Hard conversations redirected, minimized, or reframed as disloyal</li>
+        <li>Spiritual language used to justify poor handling</li>
+      </ul>
+    </div>
+
+    <div class="flag-card">
+      <div class="flag-card-label">F</div>
+      <h3>People becoming tools</h3>
+      <ul class="flag-list">
+        <li>The task is more important than the person</li>
+        <li>Volunteer culture that overloads, guilts, or never appreciates</li>
+      </ul>
+    </div>
+
+    <div class="flag-card">
+      <div class="flag-card-label">G</div>
+      <h3>Emotional manipulation</h3>
+      <ul class="flag-list">
+        <li>Gaslighting and subtle shaming</li>
+        <li>Fear of being labeled "rebellious," "unreasonable," or "unsafe"</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class="pull-quote">
+    <p>"Control is still control — even when it looks spiritual."</p>
+  </div>
+
+  <div class="callout-lesson">
+    <div class="callout-label">Lesson</div>
+    <p>The clearest marker is not how "right" something sounds — but how it treats people who ask honest questions.</p>
+  </div>
+  <div class="callout-action">
+    <div class="callout-label">What to do</div>
+    <ul>
+      <li>Ask directly: "What happens here when a leader is wrong?"</li>
+      <li>Look for shared power: clear accountability, transparent decisions, real feedback loops.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- COST -->
+<section class="page" id="cost">
+  <div class="section-number">Chapter 06</div>
+  <h2 class="section-title">The price to pay — staying vs leaving.</h2>
+
+  <p>The cost isn't abstract. It's personal.</p>
+
+  <div class="cost-compare">
+    <div class="cost-col staying">
+      <div class="cost-col-header">The cost of staying</div>
+      <ul>
+        <li>Peace</li>
+        <li>Clarity</li>
+        <li>Emotional energy</li>
+        <li>Trust</li>
+        <li>Rest and joy</li>
+        <li>Family stability</li>
+        <li>Children's sense of safety</li>
+        <li>Creativity and presence</li>
+        <li>Your discernment — slowly</li>
+        <li>Normalizing the abnormal</li>
+      </ul>
+    </div>
+    <div class="cost-col leaving">
+      <div class="cost-col-header">The cost of leaving</div>
+      <ul>
+        <li>Grief</li>
+        <li>Misunderstanding</li>
+        <li>Relational fallout</li>
+        <li>Financial limitations (sometimes)</li>
+        <li>Loss of familiar rhythms</li>
+        <li>Loss of identity markers</li>
+        <li>The shaky feeling of ground giving way</li>
+        <li>Starting over</li>
+        <li>Time and energy to rebuild</li>
+        <li>Sitting with uncertainty</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout-lesson">
+    <div class="callout-label">Lesson</div>
+    <p>"Staying" and "leaving" both cost. The question is: which cost produces more life and truth over time?</p>
+  </div>
+  <div class="callout-action">
+    <div class="callout-label">What to do</div>
+    <ul>
+      <li>Write two lists: Cost of staying for 6 more months vs Cost of leaving within 6 months.</li>
+      <li>Include your kids, health, finances, friendships, and inner life in both columns.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- GETTING OUT -->
+<section class="page" id="getting-out">
+  <div class="section-number">Chapter 07</div>
+  <h2 class="section-title">Getting out — not dramatic, but real.</h2>
+
+  <p>My way out didn't begin with a big speech. It began with honesty.</p>
+
+  <p>Things I had to accept:</p>
+
+  <ul class="prose-list">
+    <li>I can't force clarity where there is defensiveness.</li>
+    <li>I can't produce humility in others.</li>
+    <li>I don't have to stay just because I've already paid so much.</li>
+    <li>I don't have to rush.</li>
+    <li>I don't have to isolate.</li>
+  </ul>
+
+  <div class="pull-quote">
+    <p>Sometimes the most faithful step is simple: leave the room, even if you still love the people.</p>
+  </div>
+
+  <div class="callout-lesson">
+    <div class="callout-label">Lesson</div>
+    <p>You don't "argue your way" out of control. You build clarity, support, and a next step.</p>
+  </div>
+  <div class="callout-action">
+    <div class="callout-label">What to do</div>
+    <ul>
+      <li>Build a small support circle (1–3 people you fully trust).</li>
+      <li>Get practical: documents, finances, timeline, housing, work, childcare.</li>
+      <li>Don't announce early if it risks retaliation or chaos.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- RECOVERY -->
+<section class="page" id="recovery">
+  <div class="section-label">08 — Recovery</div>
+  <h2 class="section-title">The messy middle.</h2>
+
+  <p>Recovery wasn't instant. It was — and is — a messy middle.</p>
+
+  <div class="recovery-grid">
+    <div class="recovery-item">
+      <div class="r-icon">🌿</div>
+      <p>Recalibration &amp; reflection</p>
+    </div>
+    <div class="recovery-item">
+      <div class="r-icon">📓</div>
+      <p>Journaling facts + feelings</p>
+    </div>
+    <div class="recovery-item">
+      <div class="r-icon">🤝</div>
+      <p>Honest friendships</p>
+    </div>
+    <div class="recovery-item">
+      <div class="r-icon">🚶</div>
+      <p>Rest, walking, movement</p>
+    </div>
+    <div class="recovery-item">
+      <div class="r-icon">🏠</div>
+      <p>Family time &amp; presence</p>
+    </div>
+    <div class="recovery-item">
+      <div class="r-icon">🌅</div>
+      <p>Healthier rhythms: sleep, meals, Sabbath</p>
+    </div>
+  </div>
+
+  <p>I began to want a different kind of faith and life: integrated, not compartmentalized. Truth and mercy. Presence over performance. More life-giving than impressive.</p>
+
+  <p>Lessons I'm still learning:</p>
+  <ul class="prose-list">
+    <li>Leaving is not always failure.</li>
+    <li>Forgiveness can happen without pretending trust is intact.</li>
+    <li>Disruption can be mercy.</li>
+    <li>Healing takes time.</li>
+  </ul>
+
+  <div class="callout-lesson">
+    <div class="callout-label">Lesson</div>
+    <p>Healing usually starts with rhythm, safety, and truth-telling — not with "moving on quickly."</p>
+  </div>
+  <div class="callout-action">
+    <div class="callout-label">What to do</div>
+    <ul>
+      <li>Pick 3 stabilizers: sleep + movement + one safe friend.</li>
+      <li>Give yourself a "no rush" rule: don't replace one system with another too fast.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- PRACTICAL PAGES -->
+<section class="page" id="practical">
+  <div class="section-label">09 — Practical Pages</div>
+  <h2 class="section-title">For each place you might be standing.</h2>
+
+  <!-- CURRENTLY INSIDE -->
+  <h3 class="sub-title">If you're currently inside</h3>
+  <p>Don't ignore your nervous system. Pay attention to what your body is telling you.</p>
+
+  <p style="font-weight:500; color: var(--charcoal); margin-bottom:0.5rem;">Ask yourself:</p>
+  <ul class="checklist">
+    <li><div class="check-box"></div>Am I free to ask honest questions without punishment?</li>
+    <li><div class="check-box"></div>When I raise concerns, do I get clarity — or defensiveness?</li>
+    <li><div class="check-box"></div>Is there transparency around decisions, money, and leadership?</li>
+    <li><div class="check-box"></div>Are people treated like people — or like fuel?</li>
+    <li><div class="check-box"></div>Is fear used to keep people compliant?</li>
+    <li><div class="check-box"></div>Do I feel more grounded and honest — or more dependent on the group?</li>
+  </ul>
+
+  <div class="callout-lesson">
+    <div class="callout-label">Lesson</div>
+    <p>"Love" that requires your silence is not love.</p>
+  </div>
+  <div class="callout-action">
+    <div class="callout-label">What to do</div>
+    <ul>
+      <li>Write down patterns as they happen. The log becomes clarity.</li>
+      <li>Talk to 1–2 safe people outside the group.</li>
+      <li>Don't make huge decisions under pressure.</li>
+      <li>Protect your children's emotional safety above all else.</li>
+    </ul>
+  </div>
+
+  <div class="divider">Recently left</div>
+
+  <!-- RECENTLY LEFT -->
+  <h3 class="sub-title">If you recently left</h3>
+  <p>You may feel relief and grief at the same time. Anger and guilt. Clarity and confusion. All of that is allowed.</p>
+
+  <p><em>A simple recovery plan:</em></p>
+  <ul class="prose-list">
+    <li>Stabilize sleep, food, body, schedule</li>
+    <li>Reconnect with safe relationships</li>
+    <li>Give yourself a "no big decisions" window</li>
+    <li>Journal your story in facts + feelings</li>
+    <li>Rebuild spiritual or inner life without performance or pressure</li>
+  </ul>
+
+  <div class="callout-lesson">
+    <div class="callout-label">Lesson</div>
+    <p>Grief is not proof you made the wrong decision. It's proof it mattered.</p>
+  </div>
+  <div class="callout-action">
+    <div class="callout-label">What to do</div>
+    <ul>
+      <li>Keep life small for a while.</li>
+      <li>Find a steady rhythm. Let your story come back in pieces.</li>
+    </ul>
+  </div>
+
+  <div class="divider">About to join</div>
+
+  <!-- ABOUT TO JOIN -->
+  <h3 class="sub-title">If you're about to join something</h3>
+  <p>Let excitement be real — but don't outsource discernment.</p>
+
+  <p style="font-weight:500; color: var(--charcoal); margin-bottom:0.5rem;">Check:</p>
+  <ul class="checklist">
+    <li><div class="check-box"></div>Do they welcome questions openly?</li>
+    <li><div class="check-box"></div>Do they pressure urgency or "decide now" language?</li>
+    <li><div class="check-box"></div>Do they isolate you from family or friends?</li>
+    <li><div class="check-box"></div>Do they blur boundaries — time, money, access to you?</li>
+    <li><div class="check-box"></div>Do they claim exclusive truth or special status?</li>
+    <li><div class="check-box"></div>Is accountability real, or just branding?</li>
+  </ul>
+
+  <div class="callout-warning">
+    <div class="callout-label">A healthy community can say:</div>
+    <p>"Take your time." &nbsp;·&nbsp; "Ask anything." &nbsp;·&nbsp; "Keep your outside relationships." &nbsp;·&nbsp; "No pressure."</p>
+  </div>
+
+  <div class="callout-lesson">
+    <div class="callout-label">Lesson</div>
+    <p>Healthy groups don't need urgency to secure your loyalty.</p>
+  </div>
+  <div class="callout-action">
+    <div class="callout-label">What to do</div>
+    <ul>
+      <li>Ask for transparency early: leadership structure, finances, grievance process.</li>
+      <li>Keep your money and major life decisions slow.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- WARNING LIST -->
+<section class="page" id="warning-list">
+  <div class="section-label">10 — My Warning List</div>
+  <h2 class="section-title">What I won't normalize.</h2>
+  <p>These are the reframings I learned to see through. The costume the control wears.</p>
+
+  <ul class="warning-list">
+    <li><span class="real">Coercion</span>&nbsp;&nbsp;<span class="reframe">framed as calling</span></li>
+    <li><span class="real">Control</span>&nbsp;&nbsp;<span class="reframe">framed as love</span></li>
+    <li><span class="real">Secrecy</span>&nbsp;&nbsp;<span class="reframe">framed as wisdom</span></li>
+    <li><span class="real">Urgency</span>&nbsp;&nbsp;<span class="reframe">framed as faith</span></li>
+    <li><span class="real">Shaming</span>&nbsp;&nbsp;<span class="reframe">framed as discipleship</span></li>
+    <li><span class="real">Performance</span>&nbsp;&nbsp;<span class="reframe">framed as devotion</span></li>
+  </ul>
+
+  <div class="callout-lesson">
+    <div class="callout-label">Lesson</div>
+    <p>Anything that requires your disappearance to belong is not safe.</p>
+  </div>
+  <div class="callout-action">
+    <div class="callout-label">What to do</div>
+    <ul>
+      <li>Use this as a personal boundary list. If a space repeatedly crosses it, take that seriously.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- APPENDIX -->
+<section class="page" id="appendix">
+  <div class="section-label">Appendix — Quick Checklist</div>
+  <h2 class="section-title">Red flags at a glance.</h2>
+  <p>Use this as a rapid reference. The more boxes that apply, the more caution is warranted.</p>
+
+  <div class="appendix-check">
+    <div class="appendix-item"><div class="check-box"></div>Questions are punished or dismissed</div>
+    <div class="appendix-item"><div class="check-box"></div>Transparency is missing or blocked</div>
+    <div class="appendix-item"><div class="check-box"></div>Decisions are centralized and unquestionable</div>
+    <div class="appendix-item"><div class="check-box"></div>"Special revelation" or elite language used to control</div>
+    <div class="appendix-item"><div class="check-box"></div>Outsiders portrayed as unsafe</div>
+    <div class="appendix-item"><div class="check-box"></div>Shame and fear used for compliance</div>
+    <div class="appendix-item"><div class="check-box"></div>Boundaries violated: time, money, privacy</div>
+    <div class="appendix-item"><div class="check-box"></div>People are used, discarded, or silenced</div>
+    <div class="appendix-item"><div class="check-box"></div>Image protected over truth and repair</div>
+    <div class="appendix-item"><div class="check-box"></div>Urgency used to secure loyalty or decisions</div>
+  </div>
+</section>
+
+<!-- CLOSING -->
+<section class="closing">
+  <div class="eyebrow">Closing words</div>
+  <h2>May you recover your voice.</h2>
+  <div class="closing-rule"></div>
+  <p>If you're reading this while your world is shaking: may you find safe people, clear thinking, and quiet strength.</p>
+  <p>May you learn again that love does not require your disappearance.</p>
+  <div class="closing-rule"></div>
+  <p style="font-size:0.85rem; font-family:'DM Mono',monospace; letter-spacing:0.15em; color:rgba(255,255,255,0.25); font-style:normal;">DECULTIVATE — THE WORKBOOK</p>
+</section>
+
+</body>
+</html>
